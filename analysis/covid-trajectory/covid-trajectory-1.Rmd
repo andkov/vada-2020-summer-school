@@ -1,0 +1,122 @@
+---
+title: "COVID-19 Trajectory"
+author: "Andriy Koval"
+date: "May 7, 2020"
+output:
+  html_document:
+    theme: simplex
+    toc: true
+    toc_depth: 3
+    keep_md: true
+    toc_float: true
+    code_folding: hide
+---
+
+<!-- These two chunks should be added in the beginning of every .Rmd that you want to source an .R script -->
+<!--  The 1st mandatory chunck  -->
+<!--  Set the working directory to the repository's base directory -->
+```{r, echo=F, message=F} 
+#Don't combine this call with any other chunk 
+# cat("Working directory: ", getwd()) # check where you are
+  library(knitr)
+# Rmd is in "./reports/reportA/reportA.Rmd", but now the root is "./"
+  knitr::opts_knit$set(root.dir='../../') # "go up" from the folder where this .Rmd is save until you arrive at the root/working directory
+```
+
+<!--  The 2nd mandatory chunck  -->
+<!-- Set the report-wide options, and point to the external code file. -->
+```{r set_options, echo=F}
+# set options shared by all chunks
+opts_chunk$set(
+  results='show', 
+  attr.source = ".numberLines",
+  message = TRUE,
+  comment = NA, 
+  tidy = FALSE,
+  fig.height = 4, 
+  fig.width = 5.5, 
+  out.width = "1200px",
+  fig.path = 'figure_rmd/',     
+  dev = "png",
+  dpi = 400
+  # fig.path = 'figure_pdf/',     
+  # dev = "pdf"#,
+  # dev.args=list(pdf = list(colormodel = 'cmyk'))
+)
+echoChunks <- TRUE
+options(width=120) #So the output is 50% wider than the default.
+# connect to the file with the underlying R script  
+read_chunk("./analysis/covid-trajectory-1/covid-trajectory-1.R")
+# read_chunk("../../../analysis/blogposts/florida-suicide-count/fl-suicide-count.R")
+```
+# Abstract
+
+To be added
+
+# Environment
+
+```{r load-packages, echo=echoChunks, message=FALSE}
+```
+
+```{r load-sources, echo=echoChunks, message=FALSE}
+```
+
+```{r declare-globals, echo=echoChunks, results='show', message=FALSE}
+```
+ 
+```{r declare-functions, echo=echoChunks, results='show', message=FALSE}
+```
+
+# Data  
+
+The data comes from [OxCGRT][] and  [OECD][] databases
+
+```{r load-data, echo=echoChunks, results='show', message=FALSE}
+```
+
+## Data Tweaks
+
+```{r tweak-data-1, echo=echoChunks, results='show', message=FALSE,cache=TRUE, warning =F}
+ds0 %>% glimpse()
+```
+
+# Q1 - Shape of the trend
+
+> How does COVID-19 progress in each country?  
+
+```{r q1-basic-timeline, echo=TRUE, fig.height=7, fig.width=10, out.width = "1200px", message=FALSE, results='asis',warning = F, cache=TRUE}
+```
+
+# Q1 - Within Country
+```{r q1a, echo=TRUE, fig.height=2, fig.width=10, out.width = "1200px", message=FALSE, results='asis',warning = F, cache=TRUE}
+```
+
+# Q2 - Response Stringency
+
+> What was the trend of the response to COVID-10 by each country?  
+
+```{r q2-response-trend, echo=TRUE, fig.height=7, fig.width=10, out.width = "1200px", message=FALSE, results='show',warning = F, cache=TRUE}
+```
+
+```{r q2-all, echo=TRUE,  out.width = "900px", message=FALSE, results='show',warning = F, cache=TRUE}
+```
+
+# Q3 - Response metrics
+
+```{r q3, echo=TRUE, fig.height=2, fig.width=10, out.width = "1200px", message=FALSE, results='show',warning = F, cache=TRUE}
+```
+
+session information
+===========================================================================
+
+For the sake of documentation and reproducibility, the current report was rendered in the following environment.  Click the line below to expand.
+
+<details>
+  <summary>Environment <span class="glyphicon glyphicon-plus-sign"></span></summary>
+```{r session-info, echo=FALSE}
+if( requireNamespace("devtools", quietly = TRUE) ) {
+  devtools::session_info()
+} else {
+  sessionInfo()
+} 
+```
