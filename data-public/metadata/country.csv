@@ -1,0 +1,54 @@
+id,label,desired
+AUS,Australia,TRUE
+AUT,Austria,TRUE
+BEL,Belgium,TRUE
+CAN,Canada,TRUE
+CZE,Czech Republic,TRUE
+DNK,Denmark,TRUE
+EST,Estonia,TRUE
+FIN,Finland,TRUE
+FRA,France,TRUE
+DEU,Germany,TRUE
+GRC,Greece,TRUE
+HUN,Hungary,TRUE
+ISL,Iceland,TRUE
+IRL,Ireland,TRUE
+ISR,Israel,TRUE
+ITA,Italy,TRUE
+JPN,Japan,FALSE
+KOR,Korea,FALSE
+LVA,Latvia,TRUE
+LTU,Lithuania,TRUE
+LUX,Luxembourg,FALSE
+MEX,Mexico,FALSE
+NLD,Netherlands,TRUE
+NZL,New Zealand,TRUE
+NOR,Norway,TRUE
+POL,Poland,TRUE
+PRT,Portugal,TRUE
+SVK,Slovak Republic,TRUE
+SVN,Slovenia,TRUE
+ESP,Spain,TRUE
+SWE,Sweden,TRUE
+CHE,Switzerland,TRUE
+TUR,Turkey,TRUE
+GBR,United Kingdom,TRUE
+USA,United States,TRUE
+OECD,OECD countries,FALSE
+CRI,Costa Rica,FALSE
+EU22,European Union 22,FALSE
+EU16,European Union 16,FALSE
+EU28,European Union 28,FALSE
+EUR,Europe,FALSE
+G7,G7 countries,FALSE
+NAM,North America,FALSE
+OCE,Oceania,FALSE
+BGR,Bulgaria,FALSE
+HRV,Croatia,FALSE
+CYP,Cyprus,FALSE
+MKD,FYR of Macedonia,FALSE
+MLT,Malta,FALSE
+ROU,Romania,FALSE
+RUS,Russian Federation,TRUE
+ZAF,South Africa,TRUE
+COL,Colombia,FALSE
