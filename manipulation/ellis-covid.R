@@ -100,7 +100,7 @@ ds3 %>% glimpse()
 
 # if we join now, we will have missing values on static variables:
 ds_dates %>%
-  dplyr::left_join(ds3,by = c("date","country_code") ) %>%
+  dplyr::left_join(ds3, by = c("date","country_code") ) %>%
   filter(country_code == "AFG") %>%
   filter(date > lubridate::ymd("2020-03-01"))
 # to keep only those variables that change with date
@@ -127,8 +127,4 @@ ds_covid %>%
 
 # ---- save-to-disk ------------------------
 ds_covid %>% readr::write_csv(config$path_input_covid)
-
-ds_covid <-  ds_covid %>%
-  dplyr::filter(country_code %in% unique(ds_country$id))
-
 
