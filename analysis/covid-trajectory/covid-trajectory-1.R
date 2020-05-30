@@ -2,99 +2,137 @@
 rm(list=ls(all=TRUE)) #Clear the memory of variables from previous run. This is not called by knitr, because it's above the first chunk.
 
 # ---- load-packages -----------------------------------------------------------
-library(ggplot2) #For graphing
 library(magrittr) #Pipes
+library(ggplot2) #For graphing
 library(dplyr) # for shorter function names. but still prefer dplyr:: stems
-library(knitr) # dynamic documents
-library(rmarkdown) # dynamic
-library(kableExtra) # enhanced tables, see http://haozhu233.github.io/kableExtra/awesome_table_in_html.html
-requireNamespace("knitr", quietly=TRUE)
-requireNamespace("scales", quietly=TRUE) #For formating values in graphs
-requireNamespace("RColorBrewer", quietly=TRUE)
-requireNamespace("dplyr", quietly=TRUE)
-requireNamespace("DT", quietly=TRUE) # for dynamic tables
-requireNamespace("config", quietly=TRUE)
 
 # ---- load-sources ------------------------------------------------------------
 config <- config::get()
-source("./scripts/common-functions.R")        # reporting functions and quick views
 
 # ---- declare-globals --------------------
-ggplot2::theme_set(ggplot2::theme_bw())
-
+ggplot2::theme_set(
+  ggplot2::theme_bw(
+  )+
+    theme(
+      strip.background = element_rect(fill="grey90", color = NA)
+    )
+)
 # ---- declare-functions ---------------------------
-compute_epi_timeline <- function(d, n_deaths_first_day = 1) { #}, d_country ){
-  # browser()
-  # d <- ds_cgrt %>%
-  #   # filter(country_code %in% c("ITA","FRA") ) %>%
-  #   filter(country_code %in% c("AFG") ) %>%
-  # select(country_code, date, n_cases, n_deaths)
-  #
-  d_out <- d %>%
-    # dplyr::filter(country_code %in% unique(d_country$id)) %>%
-    dplyr::group_by(country_code) %>%
-    dplyr::mutate(
-      # this solution might be vulnerable to cases where some intermediate dates are missed
-      n_deaths_cum         = cumsum(tidyr::replace_na(n_deaths,0))
-      ,n_cases_cum         = cumsum(tidyr::replace_na(n_cases,0))
-      ,n_deaths_cum_per_1m = n_deaths_cum/n_population_2018*1000000
-      ,n_cases_cum_per_1m  = n_cases_cum/ n_population_2018*1000000
-
-      ,cutoff_death        = n_deaths_cum >= 1
-      ,cutoff_case         = n_cases_cum >= 1
-      ,days_since_1death   = cumsum(tidyr::replace_na(cutoff_death,0))
-      ,days_since_1case    = cumsum(tidyr::replace_na(cutoff_case,0))
-      ,date_of_1death      = lubridate::as_date(ifelse(days_since_1death==1,date, NA))
-      ,date_of_1case       = lubridate::as_date(ifelse(days_since_1case==1,date, NA))
-      ,date_of_1death      = min(date_of_1death, na.rm =T)
-      ,date_of_1case       = min(date_of_1case, na.rm =T)
-      ,days_since_1death   = (date - date_of_1death) %>% as.integer()
-      ,days_since_1case    = (date - date_of_1case) %>% as.integer()
-
-    ) %>%
-    dplyr::ungroup() %>%
-    # dplyr::filter(epi_timeline > 0) %>%
-    dplyr::mutate(
-      days_since_exodus    = as.integer(date - lubridate::date("2020-01-13")) # first case outside of china
-      ,days_since_pandemic = as.integer(date - lubridate::date("2020-03-11")) # WHO declares pandemic
-    ) %>%
-    select(-cutoff_death, - cutoff_case, -date_of_1death, -date_of_1case)
-  return(d_out)
-}
-
-# for testing the function:
-# d_out <- ds0 %>%  filter(country_code == "ITA") %>%
-#     select(
-#       country_code, date,n_cases, n_deaths, ConfirmedDeaths, ConfirmedCases
-#     ) %>%
-#   compute_epi_timeline()
-
 
 # ---- load-data -------------------------------------------------------------
 # list of focal countries
 ds_country <- readr::read_csv(config$path_country) %>%
   dplyr::filter(desired)
-
+ds_country %>% glimpse()
+# covid data
 ds_covid <- readr::read_csv(config$path_input_covid)
-# ds_covid %>% glimpse()
+ds_covid %>% glimpse()
 
-ds_country_codes <- readr::read_csv(config$path_country_codes)
+# ----- tweak-data-1 -------------------
+ds_covid <- ds_covid %>%
+  mutate(
+    oecd = country_code %in% (ds_country %>% filter(desired) %>% pull(country_code) )
+  )
+
 
 # ---- inspect-data ----------------------
-
-# ---- tweak-data-1 ---------------
-ds0 <- ds_covid %>%
-  compute_epi_timeline() %>%
-  filter(
-    country_code %in% (ds_country %>% filter(desired) %>% pull(id))
-  ) %>%
-  dplyr::left_join(
-    ds_country_codes,
-    by = c("country_code" = "country_code3")
+# create reproducible example (reprex) to test out your function
+d_reprex <- tibble::tribble(
+  ~country_code, ~date, ~n_cases,
+  "Alabnia", "2020-03-01", NA,
+  "Alabnia", "2020-03-02", 0,
+  "Alabnia", "2020-03-03", 1,
+  "Alabnia", "2020-03-04", 0,
+  "Alabnia", "2020-03-05", 3,
+  "Butan", "2020-04-01", 0,
+  "Butan", "2020-04-02", NA,
+  "Butan", "2020-04-03", 2,
+  "Butan", "2020-04-04", 3,
+  "Butan", "2020-04-05", 0,
+  "Chile", "2020-05-01", 2,
+  "Chile", "2020-05-02", 0,
+  "Chile", "2020-05-03", 0,
+  "Chile", "2020-05-04", 3,
+  "Chile", "2020-05-05", 1,
+ ) %>%
+  mutate(
+    date = lubridate::as_date(date)
   )
-ds0 %>% glimpse()
-d_out <- ds0 %>% filter(country_code == "ITA")
+
+# ---- compute-epi-1 ------------------
+# compute cumulative cases:
+# compute the onset of epidemic ( N cases or N deaths)
+# compute relative timeline
+ds1 <- d_reprex %>%
+  group_by(country_code) %>%
+  mutate(
+    n_cases_cum = cumsum(tidyr::replace_na(n_cases,0))
+  ) %>%
+  ungroup()
+ds1
+
+# ---- compute-epi-2 ------------------
+# compute the start of epidemic (i.e. the date of first case)
+ds2 <- ds1 %>%
+  group_by(country_code) %>%
+  mutate(
+    # onset_case = n_cases_cum > 0
+    # ,first_case = cumsum(onset_case) == 1L
+    # ,date_of_1case1 = ifelse(first_case, date, NA) %>% lubridate::as_date()
+    # ,date_of_1case2 = min(date_of_1case1, na.rm = T)
+    # alternatively, as a single sentence:
+    date_of_1case = ifelse(cumsum(n_cases_cum > 0) == 1L, date, NA) %>%
+      min(na.rm=T) %>%
+      lubridate::as_date()
+    ,days_since_1case = (date - date_of_1case) %>% as.integer()
+    ) %>%
+  ungroup() %>%
+  select(-date_of_1case)
+ds2
+
+
+# ---- compute-epi-3 ------------------
+
+ds3 <- d_reprex %>%
+  group_by(country_code) %>%
+  mutate(
+    n_cases_cum  = cumsum(tidyr::replace_na(n_cases,0))
+    ,date_of_1case = ifelse(cumsum(n_cases_cum > 0) == 1L, date, NA) %>%
+      min(na.rm=T) %>%
+      lubridate::as_date()
+    ,days_since_1case = (date - date_of_1case) %>% as.integer()
+  ) %>%
+  ungroup() %>%
+  select(-date_of_1case)
+
+ds3
+
+# ---- compute-epi ------------
+
+ds_covid <- ds_covid %>%
+  group_by(country_code) %>%
+  mutate(
+    # compute timeline of cumulative confirmed cases
+    n_cases_cum  = cumsum(tidyr::replace_na(n_cases,0))
+    ,date_of_1case = ifelse(cumsum(n_cases_cum > 0) == 1L, date, NA) %>%
+      min(na.rm=T) %>%
+      lubridate::as_date()
+    ,days_since_1case = (date - date_of_1case) %>% as.integer()
+    # compute timeine of cumulative deaths
+    ,n_deaths_cum  = cumsum(tidyr::replace_na(n_deaths,0))
+    ,date_of_1death = ifelse(cumsum(n_deaths_cum > 0) == 1L, date, NA) %>%
+      min(na.rm=T) %>%
+      lubridate::as_date()
+    ,days_since_1death = (date - date_of_1death) %>% as.integer()
+
+  ) %>%
+  ungroup() %>%
+  select(-date_of_1case, -date_of_1death)
+
 # ----- q1-basic-timeline -------------
+g1 <-ds_covid_timeline %>%
+
+
 # ds0 %>% glimpse()
 d1 <- ds0 %>%
   filter(country_code %in% ds_country$id)
