@@ -30,13 +30,14 @@ path_url <- "https://opendata.ecdc.europa.eu/covid19/casedistribution/csv"
 # # run above line once per update
 
 # input local saved file for the current date
-ds_covid <- readr::read_csv(config$path_input_covid)
-ds_covid %>% glimpse()
+ds0 <- readr::read_csv(config$path_input_covid)
+ds0 %>% glimpse()
 
-# ---- tweak-data -----------------------
-names(ds_covid) <- names(ds_covid) %>% snakecase::to_snake_case()
+# ---- tweak-data-1 -----------------------
+ds1 <- ds0 # to preserve the original copy for tracing and debugging
+names(ds1) <- names(ds1) %>% snakecase::to_snake_case()
 
-ds_covid <- ds_covid %>%
+ds1 <- ds1 %>%
   dplyr::rename(
     "date"               = "date_rep"      # because shorter
     ,"n_cases"           = "cases"         # because count people
@@ -51,52 +52,81 @@ ds_covid <- ds_covid %>%
   dplyr::select(-day, -month, -year) %>% # because derivative from date
   dplyr::select(date,n_cases, n_deaths, n_population_2018, dplyr::everything()) %>%
   dplyr::mutate(
-    date = lubridate::dmy(date)
+    date = lubridate::dmy(date) # to be interpreted as a date in computation/graphing
   )
-ds_covid %>% glimpse()
+ds1 %>% glimpse()
 
-ds_covid %>% pull(country_code) %>% unique()
-ds_covid %>% pull(country_code2) %>% unique()
+# ---- tweak-data-2 ---------------------
+ds2 <- ds1 # to preserve the original copy for tracing and debugging
+# to verify the presence of country identification
+ds2 %>% pull(country_code) %>% unique()
+ds2 %>% pull(country_code2) %>% unique()
+ds2 %>% pull(country_label) %>% unique()
+# to view what we miss
+ds2 %>%
+  filter(
+    country_code == "N/A"  |
+      is.na(country_code)  |
+      is.na(country_code2) |
+      country_code2 == "JPG11668"
+    ) %>%
+  distinct(country_code2, country_code, country_label)
 
-d <- ds_covid %>% filter(country_code == "N/A")
+# futher tweak based on manual inspection
+ds2 <- ds2 %>%
+  filter( !country_code2 %in% c("AI", "BQ", "JPG11668", "FK", "EH") ) %>%
+  mutate(
+    country_code2 = ifelse(country_code == "NAM", "NA", country_code2)
+  )
 
-d <- ds_covid %>% filter(country_code == "NAM") %>%
-d
+# ----- tweak-data-3 ----------------------------
+ds3 <- ds2 # to preserve the original copy for tracing and debugging
+# we observe that some countries do not have all dates reported:
+ds3 %>%
+  filter(country_code == "AFG") %>%
+  filter(date > lubridate::ymd("2020-03-01"))%>%
+  arrange(date)
 
-ds_covid <- ds_covid %>%
-  dplyr::mutate(
-    date = lubridate::dmy(date)
-  ) %>%
-  dplyr::select(
-    country_code,
-    date,
-    n_cases,
-    n_deaths,
-    n_population_2018
-  ) %>%
-  dplyr::filter(!country_code == "N/A")
-ds_covid %>% glimpse()
-# stem to have the complete timeline
-dates     <- min(ds_covid$date):max(ds_covid$date)
-countries <- unique(ds_covid$country_code) %>% na.omit()
-ds_dates   <- tibble::as_tibble(
-  expand.grid(dates, countries, stringsAsFactors = F)
+# in order to have the complete timeline:
+dates     <- min(ds3$date):max(ds3$date) %>% lubridate::as_date()
+countries <- unique(ds3$country_code) %>% na.omit()
+ds_dates  <- tibble::as_tibble(
+  expand.grid(
+    "date" = dates, "country_code" = countries, stringsAsFactors = F
+  )
 )
-names(ds_dates) <- c("date", "country_code")
-ds_dates <- ds_dates %>%
-  dplyr::mutate(
-    date = lubridate::as_date(date)
-  )
 ds_dates %>% glimpse()
-ds_covid %>% glimpse()
+ds3 %>% glimpse()
 
-ds_covid <- ds_dates %>%
-  dplyr::left_join(ds_covid,by = c("date","country_code") ) %>%
-  tidyr::fill(n_population_2018) %>%
-  dplyr::arrange(country_code, date)
+# if we join now, we will have missing values on static variables:
+ds_dates %>%
+  dplyr::left_join(ds3,by = c("date","country_code") ) %>%
+  filter(country_code == "AFG") %>%
+  filter(date > lubridate::ymd("2020-03-01"))
+# to keep only those variables that change with date
+d_timeline <- ds_dates %>%
+  dplyr::left_join(
+    ds3 %>%
+      select("date", "country_code","n_cases", "n_deaths")
+    ,by = c("date","country_code")
+  )
+# to keep only those variabels that DO NOT change with date
+d_country_info <- ds3 %>%
+  distinct(
+    n_population_2018, country_code, country_code2, country_label, continent_label
+  )
+# to inspect before merging
+d_timeline %>% glimpse()
+d_country_info %>% glimpse()
+# to create a single dataset for subsequent analysis (and possible wrangling)
+ds_covid <- dplyr::left_join(d_timeline, d_country_info, by = "country_code")
+# to inspect
+ds_covid %>%
+  filter(country_code == "AFG") %>%
+  filter(date > lubridate::ymd("2020-03-01"))
 
-
-readr::write_csv(ds_covid, config$path_input_covid)
+# ---- save-to-disk ------------------------
+ds_covid %>% readr::write_csv(config$path_input_covid)
 
 ds_covid <-  ds_covid %>%
   dplyr::filter(country_code %in% unique(ds_country$id))
