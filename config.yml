@@ -1,8 +1,4 @@
 default:
 
-    path_country      : "data-public/metadata/country.csv"
-    path_input_covid  : !expr strftime(Sys.Date(), "data-unshared/derived/covid-%Y-%m-%d.csv")
-    path_country_codes: "data-public/metadata/iso_3166_country_codes.csv"
-
-    oced_genders      : !expr c("MEN", "WOMEN")
-    oced_ages         : !expr c("1519", "2024", "2554", "5564", "6599")
+    path_country      : "data-public/metadata/country_oecd.csv"
+    path_input_covid  : !expr paste0("data-unshared/derived/covid-",Sys.Date(),".csv")

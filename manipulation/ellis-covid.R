@@ -15,19 +15,18 @@ library(fs)
 config   <- config::get()
 path_url <- "https://opendata.ecdc.europa.eu/covid19/casedistribution/csv"
 
-
 # ---- load-data ---------------------------------------------------------------
-# # download the dataset from the ECDC website to a local temporary file
-# ds_ocdc_raw <- readr::read_csv(path_url)
-#
-# # to create the folder if it does not exist
-# if( !fs::dir_exists(  fs::path_dir(config$path_input_covid)  ) ){
-#   fs::dir_create( fs::path_dir(config$path_input_covid) )
-# }
-# ds_ocdc_raw %>% readr::write_csv(config$path_input_covid) # to save a local version
-# checkmate::assert_file(config$path_input_covid) # to verify success
-# rm(ds_ocdc_raw)
-# # run above line once per update
+# download the dataset from the ECDC website to a local temporary file
+ds_ocdc_raw <- readr::read_csv(path_url)
+
+# to create the folder if it does not exist
+if( !fs::dir_exists(  fs::path_dir(config$path_input_covid)  ) ){
+  fs::dir_create( fs::path_dir(config$path_input_covid) )
+}
+ds_ocdc_raw %>% readr::write_csv(config$path_input_covid) # to save a local version
+checkmate::assert_file(config$path_input_covid) # to verify success
+rm(ds_ocdc_raw)
+# run above line once per update
 
 # input local saved file for the current date
 ds0 <- readr::read_csv(config$path_input_covid)
@@ -120,6 +119,7 @@ d_timeline %>% glimpse()
 d_country_info %>% glimpse()
 # to create a single dataset for subsequent analysis (and possible wrangling)
 ds_covid <- dplyr::left_join(d_timeline, d_country_info, by = "country_code")
+ds_covid <- ds_covid %>% select(date, n_cases, n_deaths, country_code, dplyr::everything())
 # to inspect
 ds_covid %>%
   filter(country_code == "AFG") %>%

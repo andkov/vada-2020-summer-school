@@ -1,4 +1,4 @@
-id,label,desired
+country_code,country_label,desired
 AUS,Australia,TRUE
 AUT,Austria,TRUE
 BEL,Belgium,TRUE
@@ -15,12 +15,12 @@ ISL,Iceland,TRUE
 IRL,Ireland,TRUE
 ISR,Israel,TRUE
 ITA,Italy,TRUE
-JPN,Japan,FALSE
-KOR,Korea,FALSE
+JPN,Japan,TRUE
+KOR,Korea,TRUE
 LVA,Latvia,TRUE
 LTU,Lithuania,TRUE
 LUX,Luxembourg,FALSE
-MEX,Mexico,FALSE
+MEX,Mexico,TRUE
 NLD,Netherlands,TRUE
 NZL,New Zealand,TRUE
 NOR,Norway,TRUE
