@@ -1,7 +1,8 @@
 ---
-title: "COVID-19 Trajectory"
+title: "Visualising the Pandemic"
+subtitle: "Comparing trajectories of COVID-19 across countries "
 author: "Andriy Koval"
-date: "May 7, 2020"
+date: "June 2, 2020"
 output:
   html_document:
     theme: simplex
@@ -9,7 +10,7 @@ output:
     toc_depth: 3
     keep_md: true
     toc_float: true
-    code_folding: hide
+    code_folding: show
 ---
 
 <!-- These two chunks should be added in the beginning of every .Rmd that you want to source an .R script -->
@@ -28,33 +29,64 @@ output:
 ```{r set_options, echo=F}
 # set options shared by all chunks
 opts_chunk$set(
-  results='show', 
+  results     = 'show', 
   attr.source = ".numberLines",
-  message = TRUE,
-  comment = NA, 
-  tidy = FALSE,
-  fig.height = 4, 
-  fig.width = 5.5, 
-  out.width = "1200px",
-  fig.path = 'figure_rmd/',     
-  dev = "png",
-  dpi = 400
-  # fig.path = 'figure_pdf/',     
-  # dev = "pdf"#,
-  # dev.args=list(pdf = list(colormodel = 'cmyk'))
+  message     = TRUE,
+  comment     = NA, 
+  tidy        = FALSE,
+  fig.height  = 4, 
+  fig.width   = 5.5, 
+  out.width   = "900px",
+  fig.path    = 'figure_rmd/'     
 )
 echoChunks <- TRUE
 options(width=120) #So the output is 50% wider than the default.
 # connect to the file with the underlying R script  
-read_chunk("./analysis/covid-trajectory-1/covid-trajectory-1.R")
+read_chunk("./analysis/covid-trajectory/covid-trajectory-1.R")
 # read_chunk("../../../analysis/blogposts/florida-suicide-count/fl-suicide-count.R")
 ```
 # Abstract
 
-To be added
+This report demonstrates basic exploration of COVID-19 data, with the focus on computing and graphing data on ___relative___ timelines, in which the "day zero" is unique for each country. 
+
+### Learning objectives:
+After this tutorial, the reader should be able to:
+
+1. Compute cumulative counts
+2. Plot interactive trajectories with `plotly`
+3. Compute relative timelines
+
+
+# Goals: Plotting trajectories 
+
+In this tutorial we will have three goals. First, we would like to have a tool to plot multiple trajectories onto the same canvas and explore the differences between trajectories plotted on the same scale.  Second, we would like to create a unique temporal context for each trajectory and express it with respect meaningful anchors, such as first detected case or first confirmed death. Thirdly, we would like to better understand the sequence of these temporal anchors to have a better understanding of how the pandemic unfolded. 
+
+Here are the graphs we will be creating in this tutorial:  
+
+```{r preview-0, echo=FALSE,  message=FALSE, results='show',warning = F, cache=TRUE}
+```
+
+## Goal 1 - Absolute, Interactive   
+
+```{r preview-1, echo=FALSE,  message=FALSE, results='show',warning = F, cache=TRUE, fig.height = 6}
+```
+
+
+
+## Goal 2 - Relative, faceted 
+
+```{r preview-2, echo=F, fig.height=8, fig.width=10, out.width = "1200px", message=FALSE, results='asis',warning = F, cache=TRUE}
+```
+
+
+## Goal 3 - Temporal sequence
+```{r preview-3, echo=F, fig.height=6, fig.width=8, out.width = "900px", message=FALSE, results='show',warning = F, cache=TRUE}
+```
+
 
 # Environment
 
+Non-technical readers are welcome to skip this section. 
 ```{r load-packages, echo=echoChunks, message=FALSE}
 ```
 
@@ -67,43 +99,103 @@ To be added
 ```{r declare-functions, echo=echoChunks, results='show', message=FALSE}
 ```
 
+
 # Data  
 
-The data comes from [OxCGRT][] and  [OECD][] databases
+The data comes from [European Centre for Disease Prevention and Control](https://www.ecdc.europa.eu/en) and can be downloaded [here](https://www.ecdc.europa.eu/en/publications-data/download-todays-data-geographic-distribution-covid-19-cases-worldwide). I discuss the preparation of this data for analysis is a [separate post](). 
 
 ```{r load-data, echo=echoChunks, results='show', message=FALSE}
 ```
 
-## Data Tweaks
+A few things to notice about this data set:
+
+1. Only `date` , `n_cases`, and `n_deaths` change over time. All other variables have a single unique value for each country.
+
+2. For some countries, the observations are missing for certain dates, for example:
+```{r}
+ds_covid %>% filter(country_code == "FIN") %>% filter(date > as_date("2020-02-26"))
+```
+The data preparation step ensured that each country has the same number of rows, creating these missing cells. This is important for two reasons: __A__) we want to be able to differentiate between the absence of ___cases___ and the absence of ___reporting___ and __B__) missing dates will complicate comutation of relative timelines. 
+
+
+# Data Tweaks
 
 ```{r tweak-data-1, echo=echoChunks, results='show', message=FALSE,cache=TRUE, warning =F}
-ds0 %>% glimpse()
 ```
 
-# Q1 - Shape of the trend
+We focus on 36 country members of the Organization for Economic Co-operation and Development (OECD) because they report  more nuanced data on their economic and social development, so we can have a richer pool of explanatory variables (see http://stats.oecd.org/ )
 
-> How does COVID-19 progress in each country?  
 
-```{r q1-basic-timeline, echo=TRUE, fig.height=7, fig.width=10, out.width = "1200px", message=FALSE, results='asis',warning = F, cache=TRUE}
+# Goal 1
+
+Computing cumulative (running) sum is easily accomplished with `cumsum` function paired with `group_by`, however, watch  out for `NA` values: they will break the running sum, resulting in the `NA` for the rest of the column:
+```{r goal_1-1, echo=TRUE, message=FALSE, results='show',warning = F, cache=TRUE}
+```
+To avoid this, we use convert `NA` to `0` on the fly with `tidyr::replace_na()` function: 
+```{r goal_1-2, echo=TRUE, message=FALSE, results='show',warning = F, cache=TRUE}
 ```
 
-# Q1 - Within Country
-```{r q1a, echo=TRUE, fig.height=2, fig.width=10, out.width = "1200px", message=FALSE, results='asis',warning = F, cache=TRUE}
+This option is better than converting `NA`s to zero during the data preparation step, as this would mask the absence of reporting, overwriting it with a definitive value of `0` cases. 
+
+Now, with the cumulative case available, we can plot the trajectory in a interactive graph with `plotly` package: 
+```{r goal_1-3, echo=TRUE,  message=FALSE, results='show',warning = F, cache=TRUE, fig.height = 6}
+```
+Note that we add the highlight component with the `plotly::highlight()` function.  
+
+If you are familiar with `ggplot2`, the syntax of `plotly` should not be too confusing, however, it does take some time to get used to. 
+
+For more options and syntax guide, see https://plotly-r.com/client-side-linking.html. There is also a package for rendering `ggplot2` into interactive graphs ([`ggplotly`](https://rdrr.io/cran/plotly/man/ggplotly.html)), which offers less flexibility in display design compared to creating graphs directly with `plotly`, but is much simpler to implement. 
+
+```{r goal_1-4, echo=TRUE,  message=FALSE, results='show',warning = F, cache=TRUE, fig.height = 6}
 ```
 
-# Q2 - Response Stringency
+# Goal 2 
 
-> What was the trend of the response to COVID-10 by each country?  
+It is often makes sense to compare the progression of epidemics across countries using a meaningful "time zero", for example the day of the first confirmed case or the first confirmed death in the country. To help us carry out the computation, let us construct a fictional example that we can use to develop the script
 
-```{r q2-response-trend, echo=TRUE, fig.height=7, fig.width=10, out.width = "1200px", message=FALSE, results='show',warning = F, cache=TRUE}
+```{r reprex-1,echo = echoChunks, message=FALSE, results='show',warning = F, cache=TRUE}
 ```
 
-```{r q2-all, echo=TRUE,  out.width = "900px", message=FALSE, results='show',warning = F, cache=TRUE}
+We already know how to compute cumulative counts
+```{r reprex-2,echo = echoChunks, message=FALSE, results='show',warning = F, cache=TRUE, attr.source='.numberLines'}
+```
+Now we will use a simple logical test to create a logical variable indicating when the running total exceeded the value of the chosen threshold. 
+```{r reprex-3,echo = echoChunks, message=FALSE, results='show',warning = F, cache=TRUE, attr.source='.numberLines'}
+```
+It may make sense to use other operationalization the "onset" event.. For example, we can define it as "the date of the 10th case" or "3rd death" or  ".1% of population infected". 
+Now with the column `onset_case` marking whether the running total is higher than a threshold, we can identify the first occurrence of `TRUE` : 
+```{r reprex-4,echo = echoChunks, message=FALSE, results='show',warning = F, cache=TRUE, attr.source='.numberLines'}
+```
+Notice, that we use the property of `logical` class: when used in mathematical expression, `FALSE` assumes the value of `0`, while `TRUE` is interpreted as `1`. 
+
+Now we can use this indicator to extract the date associated with this row:
+```{r reprex-5,echo = echoChunks, message=FALSE, results='show',warning = F, cache=TRUE, attr.source='.numberLines'}
 ```
 
-# Q3 - Response metrics
+There will be only one date associated with traspassing the threshold, so we populate the rest of the cells with it
+```{r reprex-6,echo = echoChunks, message=FALSE, results='show',warning = F, cache=TRUE, attr.source='.numberLines'}
+```
+This allows us for a very straightforward computation of the distance between any given date and the date of the "onset", in this case the date of the first confirmed case:
+```{r reprex-7,echo = echoChunks, message=FALSE, results='show',warning = F, cache=TRUE, attr.source='.numberLines'}
+```
+Finally, we can re-express these steps more succinctly, however, it might be advisible to leave these step in comments in case you need to retrace your steps or debug an error down the stream
 
-```{r q3, echo=TRUE, fig.height=2, fig.width=10, out.width = "1200px", message=FALSE, results='show',warning = F, cache=TRUE}
+```{r reprex-7,echo = echoChunks, message=FALSE, results='show',warning = F, cache=TRUE, attr.source='.numberLines'}
+```
+
+## Compute relative timelines
+
+```{r compute-epi-timeline,echo = echoChunks, message=FALSE, results='show',warning = F, cache=TRUE, attr.source='.numberLines'}
+```
+
+## Goal 2 graph 
+
+```{r goal_2-1, echo=T, fig.height=8, fig.width=10, out.width = "1200px", message=FALSE, results='asis',warning = F, cache=TRUE, attr.source='.numberLines'}
+```
+
+# Goal 3
+
+```{r goal_3-1, echo=T, fig.height=6, fig.width=8, out.width = "900px", message=FALSE, results='show',warning = F, cache=TRUE}
 ```
 
 session information

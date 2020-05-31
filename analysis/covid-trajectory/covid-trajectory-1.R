@@ -5,11 +5,13 @@ rm(list=ls(all=TRUE)) #Clear the memory of variables from previous run. This is 
 library(magrittr) #Pipes
 library(ggplot2) #For graphing
 library(dplyr) # for shorter function names. but still prefer dplyr:: stems
-
+library(lubridate) # for working with dates
+library(plotly) # interactive graphs
 # ---- load-sources ------------------------------------------------------------
 config <- config::get()
 
 # ---- declare-globals --------------------
+# to be applied to every graph we will make
 ggplot2::theme_set(
   ggplot2::theme_bw(
   )+
@@ -17,99 +19,68 @@ ggplot2::theme_set(
       strip.background = element_rect(fill="grey90", color = NA)
     )
 )
+# important dates we will refer to in analysis
+date_of_exodus   <- lubridate::date("2020-01-13") # first case outside of China
+date_of_pandemic <- lubridate::date("2020-03-11") # WHO declares pandemic
+# to help us focus on a manageable set of countries for purposes of demonstration
+oecd_countries <- c(
+  "AUS", "AUT", "BEL", "CAN", "CZE", "DNK", "EST", "FIN", "FRA",
+  "DEU", "GRC", "HUN", "ISL", "IRL", "ISR", "ITA", "JPN", "KOR",
+  "LVA", "LTU", "MEX", "NLD", "NZL", "NOR", "POL", "PRT", "SVK",
+  "SVN", "ESP", "SWE", "CHE", "TUR", "GBR", "USA", "RUS", "ZAF"
+)
+# adds neat styling to your knitr table
+neat <- function(x, output_format = "html"){
+  # knitr.table.format = output_format
+  if(output_format == "pandoc"){
+    x_t <- knitr::kable(x, format = "pandoc")
+  }else{
+    x_t <- x %>%
+      # x %>%
+      # knitr::kable() %>%
+      knitr::kable(format=output_format) %>%
+      kableExtra::kable_styling(
+        bootstrap_options = c("striped", "hover", "condensed","responsive"),
+        # bootstrap_options = c( "condensed"),
+        full_width = F,
+        position = "left"
+      )
+  }
+  return(x_t)
+}
+
 # ---- declare-functions ---------------------------
 
-# ---- load-data -------------------------------------------------------------
-# list of focal countries
-ds_country <- readr::read_csv(config$path_country) %>%
-  dplyr::filter(desired)
-ds_country %>% glimpse()
-# covid data
-ds_covid <- readr::read_csv(config$path_input_covid)
-ds_covid %>% glimpse()
-
-# ----- tweak-data-1 -------------------
-ds_covid <- ds_covid %>%
+# ---- preview-0 ---------------------------------
+library(magrittr) #Pipes
+library(ggplot2) #For graphing
+library(dplyr) # for shorter function names. but still prefer dplyr:: stems
+library(lubridate) # for working with dates
+library(plotly) # interactive graphs
+config <- config::get()
+ggplot2::theme_set(
+  ggplot2::theme_bw(
+  )+
+    theme(
+      strip.background = element_rect(fill="grey90", color = NA)
+    )
+)
+# important dates we will refer to in analysis
+date_of_exodus   <- lubridate::date("2020-01-13") # first case outside of China
+date_of_pandemic <- lubridate::date("2020-03-11") # WHO declares pandemic
+# to help us focus on a manageable set of countries for purposes of demonstration
+oecd_countries <- c(
+  "AUS", "AUT", "BEL", "CAN", "CZE", "DNK", "EST", "FIN", "FRA",
+  "DEU", "GRC", "HUN", "ISL", "IRL", "ISR", "ITA", "JPN", "KOR",
+  "LVA", "LTU", "MEX", "NLD", "NZL", "NOR", "POL", "PRT", "SVK",
+  "SVN", "ESP", "SWE", "CHE", "TUR", "GBR", "USA", "RUS", "ZAF"
+)
+# to have a handy filter
+d_preview <-readr::read_csv(config$path_input_covid) %>%
   mutate(
-    oecd = country_code %in% (ds_country %>% filter(desired) %>% pull(country_code) )
-  )
-
-
-# ---- inspect-data ----------------------
-# create reproducible example (reprex) to test out your function
-d_reprex <- tibble::tribble(
-  ~country_code, ~date, ~n_cases,
-  "Alabnia", "2020-03-01", NA,
-  "Alabnia", "2020-03-02", 0,
-  "Alabnia", "2020-03-03", 1,
-  "Alabnia", "2020-03-04", 0,
-  "Alabnia", "2020-03-05", 3,
-  "Butan", "2020-04-01", 0,
-  "Butan", "2020-04-02", NA,
-  "Butan", "2020-04-03", 2,
-  "Butan", "2020-04-04", 3,
-  "Butan", "2020-04-05", 0,
-  "Chile", "2020-05-01", 2,
-  "Chile", "2020-05-02", 0,
-  "Chile", "2020-05-03", 0,
-  "Chile", "2020-05-04", 3,
-  "Chile", "2020-05-05", 1,
- ) %>%
-  mutate(
-    date = lubridate::as_date(date)
-  )
-
-# ---- compute-epi-1 ------------------
-# compute cumulative cases:
-# compute the onset of epidemic ( N cases or N deaths)
-# compute relative timeline
-ds1 <- d_reprex %>%
-  group_by(country_code) %>%
-  mutate(
-    n_cases_cum = cumsum(tidyr::replace_na(n_cases,0))
-  ) %>%
-  ungroup()
-ds1
-
-# ---- compute-epi-2 ------------------
-# compute the start of epidemic (i.e. the date of first case)
-ds2 <- ds1 %>%
-  group_by(country_code) %>%
-  mutate(
-    # onset_case = n_cases_cum > 0
-    # ,first_case = cumsum(onset_case) == 1L
-    # ,date_of_1case1 = ifelse(first_case, date, NA) %>% lubridate::as_date()
-    # ,date_of_1case2 = min(date_of_1case1, na.rm = T)
-    # alternatively, as a single sentence:
-    date_of_1case = ifelse(cumsum(n_cases_cum > 0) == 1L, date, NA) %>%
-      min(na.rm=T) %>%
-      lubridate::as_date()
-    ,days_since_1case = (date - date_of_1case) %>% as.integer()
-    ) %>%
-  ungroup() %>%
-  select(-date_of_1case)
-ds2
-
-
-# ---- compute-epi-3 ------------------
-
-ds3 <- d_reprex %>%
-  group_by(country_code) %>%
-  mutate(
-    n_cases_cum  = cumsum(tidyr::replace_na(n_cases,0))
-    ,date_of_1case = ifelse(cumsum(n_cases_cum > 0) == 1L, date, NA) %>%
-      min(na.rm=T) %>%
-      lubridate::as_date()
-    ,days_since_1case = (date - date_of_1case) %>% as.integer()
+    oecd = country_code %in% oecd_countries
   ) %>%
   ungroup() %>%
-  select(-date_of_1case)
-
-ds3
-
-# ---- compute-epi ------------
-
-ds_covid <- ds_covid %>%
   group_by(country_code) %>%
   mutate(
     # compute timeline of cumulative confirmed cases
@@ -124,188 +95,371 @@ ds_covid <- ds_covid %>%
       min(na.rm=T) %>%
       lubridate::as_date()
     ,days_since_1death = (date - date_of_1death) %>% as.integer()
-
+    # compute absolute timeline
+    ,days_since_exodus   = as.integer(date - date_of_exodus) # first case outside of china
+    ,days_since_pandemic = as.integer(date - date_of_pandemic) # WHO declares pandemic
+    ,n_deaths_cum_per_1m = as.integer(n_deaths_cum/n_population_2018*1000000)
+    ,n_cases_cum_per_1m  = as.integer(n_cases_cum/ n_population_2018*1000000)
   ) %>%
   ungroup() %>%
-  select(-date_of_1case, -date_of_1death)
+  select(-date_of_1case, -date_of_1death) %>%
+  select(
+    date, country_code, n_cases, n_deaths, n_cases_cum, n_deaths_cum,
+    days_since_1case, days_since_1death, days_since_exodus, days_since_pandemic,
+    dplyr::everything()
+  )
+# d_preview %>% glimpse()
+# ---- preview-1 -----------------
+library(plotly)
+d_preview %>% filter(oecd) %>%
+  highlight_key(~country_label )%>%
+  plot_ly(
+    x = ~ date, y = ~ log(n_cases_cum)
+  ) %>%
+  group_by(country_label) %>%
+  add_lines() %>%
+  highlight(
+    on = "plotly_click"
+    ,selectize = TRUE
+    ,dynamic = TRUE
+    ,persistent = TRUE
+  )
 
-# ----- q1-basic-timeline -------------
-g1 <-ds_covid_timeline %>%
+
+# ----- preview-2 --------------------------
+d1 <- d_preview %>% filter(oecd)
+d1 %>%
+  ggplot(aes(
+    x = days_since_exodus
+    ,y = n_deaths_cum_per_1m
+  ))+
+  geom_line()+
+  facet_wrap(~country_label, scale = "free", ncol = 6)+
+  geom_point(
+    data  = d1 %>% filter(days_since_1case == 1)
+    ,size = 2, fill = "#1b9e77", color = "black", alpha = .5, shape = 21
+  )+
+  geom_point(
+    data  = d1 %>% filter(days_since_1death == 1)
+    ,size = 2, fill = "#d95f02", color = "black", alpha = .5, shape = 21
+  )+
+  geom_vline(xintercept = 58, linetype = "dotted",)+
+  geom_vline(xintercept = 75, linetype = "dashed", alpha = .5)+
+  geom_vline(xintercept = 100, linetype = "dashed", color = "red", alpha = .5)+
+  scale_x_continuous(breaks = seq(0,100, 50))+
+  labs(
+    title    = "Timeline of COVID-19: Cumulative Deaths per 1 million"
+    ,y       = "Cumulative Deaths per 1 mil"
+    ,x       = "Days since first case outside of China (Jan 13, 2020)"
+    ,caption = "(first dot) = 1st confirmed case, (second dot) = 1st confirmed death,
+    (dotted line) = pandemic announced by WHO, (dashed lines) = 75 and 100th day since Exodus"
+  )
 
 
-# ds0 %>% glimpse()
-d1 <- ds0 %>%
-  filter(country_code %in% ds_country$id)
+# ----- preview-3 ----------------
+# How long did it take to show first case/death?
+d_preview %>%
+  filter(oecd) %>%
+  filter(days_since_1case == 0) %>%
+  filter(!is.na(days_since_1death)) %>% # with a least 1 confirmed death
+  filter(!is.na(country_label)) %>%
+  mutate(
+    country_label                = forcats::fct_reorder(country_label, days_since_exodus)
+    ,days_to_1death_since_exodus = (-1*days_since_1death) +days_since_exodus
+  ) %>%
+  # ggplot(aes(x = days_since_exodus, y = country_label))+
+  ggplot(aes(x = days_since_exodus, y = country_label))+
+  geom_segment(aes(yend = country_label, xend = 0), linetype=NA, alpha = .8)+
+  geom_segment(aes(yend = country_label, xend = days_to_1death_since_exodus, color = "red"))+
+  geom_point(shape = 21, size =2, alpha = .6, fill = "#1b9e77")+
+  geom_point(aes(x = days_to_1death_since_exodus), shape = 21, size =2, alpha = .6, fill = "#d95f02")+
+  geom_text(aes(label = country_code2, x = days_to_1death_since_exodus), hjust = -1, size = 3, color = "grey60")+
+  scale_x_continuous(breaks = seq(0,140, 20))+
+  guides(color = F)+
+  labs(
+    title = "COVID Timeline: Days to 1st Case and 1st Death"
+    ,x = "Days to first case since exodus (January 13)", y = NULL
+    ,caption = "(green dot) = 1st confirmed case, (orange dot) = 1st confirmed death"
+  )
+
+
+
+# ---- load-data -------------------------------------------------------------
+# covid data
+ds_covid <- readr::read_csv(config$path_input_covid)
+ds_covid %>% glimpse()
+# note that only `date`, `n_cases`, and `n_deatsh` change with time
+# other variables have the same value within each country
+
+# ----- tweak-data-1 -------------------
+# to help us focus on a smaller subset of countries
+oecd_countries <- c(
+  "AUS", "AUT", "BEL", "CAN", "CZE", "DNK", "EST", "FIN", "FRA",
+  "DEU", "GRC", "HUN", "ISL", "IRL", "ISR", "ITA", "JPN", "KOR",
+  "LVA", "LTU", "MEX", "NLD", "NZL", "NOR", "POL", "PRT", "SVK",
+  "SVN", "ESP", "SWE", "CHE", "TUR", "GBR", "USA", "RUS", "ZAF"
+)
+# to have a handy filter
+ds_covid <- ds_covid %>%
+  mutate(
+    oecd = country_code %in% oecd_countries
+  )
+
+
+# ----- goal_1-1 -------------------
+ds_covid <- ds_covid %>%
+  group_by(country_code) %>%
+  mutate(
+    n_cases_cum = cumsum(n_cases) # would produce NA after en
+    # n_cases_cum = cumsum(tidyr::replace_na(n_cases,0))
+  ) %>%
+  ungroup()
+ds_covid %>%
+  filter(country_code == "FIN") %>% filter(date > as_date("2020-02-26")) %>%
+  select(date, country_code, n_cases, n_cases_cum)
+
+# ----- goal_1-2 -------------------
+ds_covid <- ds_covid %>%
+  group_by(country_code) %>%
+  mutate(
+    # n_cases_cum = cumsum(n_cases) # would produce NA after en
+    n_cases_cum = cumsum(tidyr::replace_na(n_cases,0))
+  ) %>%
+  ungroup()
+ds_covid %>%
+  filter(country_code == "FIN") %>% filter(date > as_date("2020-02-26")) %>%
+  select(date, country_code, n_cases, n_cases_cum)
+
+# ----- goal_1-3 ---------------
+library(plotly)
+g1 <- ds_covid %>%
+  filter(oecd) %>%
+  highlight_key(~country_label )%>%
+  plot_ly(
+    x = ~ date, y = ~ log(n_cases_cum)
+  ) %>%
+  group_by(country_label) %>%
+  add_lines()
+g1 %>%
+  highlight(
+    on = "plotly_click"
+    ,selectize = TRUE
+    ,dynamic = TRUE
+    ,persistent = TRUE
+  )
+
+# ----- goal_1-4 ---------------
+g1 <- ds_covid %>%
+  filter(oecd) %>%
+  ggplot(aes(x = date, y= log(n_cases_cum)))+
+  geom_line(aes(group = country_code))
+
+g1 <- plotly::ggplotly(g1) %>% plotly::highlight(on = "plotly_hover")
+g1
+
+# ---- reprex-1 ----------------------
+# create reproducible example (reprex) to test out your function
+d_reprex <- tibble::tribble(
+  ~country_code, ~date, ~n_cases,
+  "Alabnia", "2020-03-01", NA,
+  "Alabnia", "2020-03-02", 0,
+  "Alabnia", "2020-03-03", 1,
+  "Alabnia", "2020-03-04", 0,
+  "Alabnia", "2020-03-05", 3,
+  "Botswana",   "2020-04-01", 0,
+  "Botswana",   "2020-04-02", NA,
+  "Botswana",   "2020-04-03", 2,
+  "Botswana",   "2020-04-04", 3,
+  "Botswana",   "2020-04-05", 0,
+  "Chile",   "2020-05-01", 2,
+  "Chile",   "2020-05-02", 0,
+  "Chile",   "2020-05-03", 0,
+  "Chile",   "2020-05-04", 3,
+  "Chile",   "2020-05-05", 1,
+ ) %>%
+  mutate(
+    date = lubridate::as_date(date)
+  )
+d_reprex  %>% neat()
+
+# ---- reprex-2 ----------------------
+d_reprex_timeline <- d_reprex %>%
+  group_by(country_code) %>%
+  mutate(
+    n_cases_cum = cumsum(tidyr::replace_na(n_cases,0))
+  )
+d_reprex_timeline
+
+# ---- reprex-3 ----------------------
+d_reprex_timeline <- d_reprex %>%
+  group_by(country_code) %>%
+  mutate(
+    n_cases_cum = cumsum(tidyr::replace_na(n_cases,0))
+    ,onset_case = n_cases_cum > 0
+  )
+d_reprex_timeline
+
+# ---- reprex-4 ----------------------
+d_reprex_timeline <- d_reprex %>%
+  group_by(country_code) %>%
+  mutate(
+    n_cases_cum = cumsum(tidyr::replace_na(n_cases,0))
+    ,onset_case = n_cases_cum > 0
+    ,first_case = cumsum(onset_case) == 1L
+  )
+d_reprex_timeline
+
+# ---- reprex-5 ----------------------
+d_reprex_timeline <- d_reprex %>%
+  group_by(country_code) %>%
+  mutate(
+    n_cases_cum = cumsum(tidyr::replace_na(n_cases,0))
+    ,onset_case = n_cases_cum > 0
+    ,first_case = cumsum(onset_case) == 1L
+    ,date_of_1case1 = ifelse(first_case, date, NA) %>% lubridate::as_date()
+  )
+d_reprex_timeline
+
+# ---- reprex-6 ----------------------
+d_reprex_timeline <- d_reprex %>%
+  group_by(country_code) %>%
+  mutate(
+    n_cases_cum = cumsum(tidyr::replace_na(n_cases,0))
+    ,onset_case = n_cases_cum > 0
+    ,first_case = cumsum(onset_case) == 1L
+    ,date_of_1case1 = ifelse(first_case, date, NA) %>% lubridate::as_date()
+    ,date_of_1case2 = min(date_of_1case1, na.rm = T)
+  )
+d_reprex_timeline
+
+# ---- reprex-7 ----------------------
+d_reprex_timeline <- d_reprex %>%
+  group_by(country_code) %>%
+  mutate(
+    n_cases_cum = cumsum(tidyr::replace_na(n_cases,0))
+    ,onset_case = n_cases_cum > 0
+    ,first_case = cumsum(onset_case) == 1L
+    ,date_of_1case1 = ifelse(first_case, date, NA) %>% lubridate::as_date()
+    ,date_of_1case2 = min(date_of_1case1, na.rm = T)
+    ,days_since_1case = (date - date_of_1case) %>% as.integer()
+  )
+d_reprex_timeline
+# ---- reprex-7 ----------------------
+d_reprex_timeline <- d_reprex %>%
+  group_by(country_code) %>%
+  mutate(
+    n_cases_cum = cumsum(tidyr::replace_na(n_cases,0))
+    #,onset_case = n_cases_cum > 0
+    # ,first_case = cumsum(onset_case) == 1L
+    # ,date_of_1case1 = ifelse(first_case, date, NA) %>% lubridate::as_date()
+    # ,date_of_1case2 = min(date_of_1case1, na.rm = T)
+    # alternatively, as a single sentence:
+    ,date_of_1case = ifelse(cumsum(n_cases_cum > 0) == 1L, date, NA) %>%
+      min(na.rm=T) %>%
+      lubridate::as_date()
+    # relative timeline
+    ,days_since_1case = (date - date_of_1case) %>% as.integer()
+    ) %>%
+  ungroup() %>%
+  select(-date_of_1case) # because it is easily derived
+d_reprex_timeline %>% neat()
+
+
+# ---- compute-epi-timeline ------------
+
+ds_covid_timeline <- ds_covid %>%
+  group_by(country_code) %>%
+  mutate(
+    # compute timeline of cumulative confirmed cases
+    n_cases_cum  = cumsum(tidyr::replace_na(n_cases,0))
+    ,date_of_1case = ifelse(cumsum(n_cases_cum > 0) == 1L, date, NA) %>%
+      min(na.rm=T) %>%
+      lubridate::as_date()
+    ,days_since_1case = (date - date_of_1case) %>% as.integer()
+    # compute timeine of cumulative deaths
+    ,n_deaths_cum  = cumsum(tidyr::replace_na(n_deaths,0))
+    ,date_of_1death = ifelse(cumsum(n_deaths_cum > 0) == 1L, date, NA) %>%
+      min(na.rm=T) %>%
+      lubridate::as_date()
+    ,days_since_1death = (date - date_of_1death) %>% as.integer()
+    # compute absolute timeline
+    ,days_since_exodus   = as.integer(date - date_of_exodus) # first case outside of china
+    ,days_since_pandemic = as.integer(date - date_of_pandemic) # WHO declares pandemic
+    ,n_deaths_cum_per_1m = as.integer(n_deaths_cum/n_population_2018*1000000)
+    ,n_cases_cum_per_1m  = as.integer(n_cases_cum/ n_population_2018*1000000)
+  ) %>%
+  ungroup() %>%
+  select(-date_of_1case, -date_of_1death) %>%
+  select(
+    date, country_code, n_cases, n_deaths, n_cases_cum, n_deaths_cum,
+    days_since_1case, days_since_1death, days_since_exodus, days_since_pandemic,
+    dplyr::everything()
+  )
+ds_covid_timeline %>% glimpse()
+
+# ----- goal_2-1 ---------------------
 g1 <- d1 %>%
   ggplot(aes(
     x = days_since_exodus
     ,y = n_cases_cum
-    # ,y =n_cases_cum_per_1m
-    # ,y = n_deaths_cum
-    # ,y = n_deaths_cum_per_1m
   ))+
   geom_line()+
-  # geom_line(aes(y=StringencyIndex), color = "red")+
-  facet_wrap(~country_label, scale = "free")+
-  geom_point(data = d1 %>% filter(days_since_1case == 1), size = 2, fill = "#1b9e77", color = "black", alpha = .5, shape = 21)+
-  geom_point(data = d1 %>% filter(days_since_1death == 1), size = 2, fill = "#d95f02", color = "black", alpha = .5, shape = 21)+
-  labs(
-    title = "Timeline of COVID-19 "
-    , y = "Cumulative Cases", x = "Days since first case outside of China (Jan 13, 2020)"
-    , caption = "(first dot) = 1st confirmed case, (second dot) = 1st confirmed death, (dashed line) = pandemic announced by WHO"
+  facet_wrap(~country_label, scale = "free", ncol = 6)+
+  geom_point(
+    data  = d1 %>% filter(days_since_1case == 1)
+    ,size = 2, fill = "#1b9e77", color = "black", alpha = .5, shape = 21
   )+
-  geom_vline(xintercept = 58, linetype = "dashed")
+  geom_point(
+    data  = d1 %>% filter(days_since_1death == 1)
+    ,size = 2, fill = "#d95f02", color = "black", alpha = .5, shape = 21
+  )+
+  geom_vline(xintercept = 58, linetype = "dotted",)+
+  geom_vline(xintercept = 75, linetype = "dashed", alpha = .5)+
+  geom_vline(xintercept = 100, linetype = "dashed", color = "red", alpha = .5)+
+  scale_x_continuous(breaks = seq(0,100, 50))+
+  labs(
+    title = "Timeline of COVID-19: Cumulative Cases"
+    , y = "Cumulative Cases (in thousands)", x = "Days since first case outside of China (Jan 13, 2020)"
+    , caption = "(first dot) = 1st confirmed case, (second dot) = 1st confirmed death,
+    (dotted line) = pandemic announced by WHO, (dashed lines) = 75 and 100th day since Exodus"
+  )
 cat("\n## Cases\n")
 g1
-cat("\n## Cases per 1m\n")
-g1 + aes(y = n_cases_cum_per_1m)+labs(y = "Cumulative Cases per 1 mil")
-cat("\n## Deaths\n")
-g1 + aes(y = n_deaths_cum)+labs(y = "Cumulative Deaths")
-cat("\n## Deaths per 1m\n")
-g1 + aes(y = n_deaths_cum_per_1m)+labs(y = "Cumulative Deaths per 1 mil")
+# cat("\n## Cases per 1m\n")
+# g1 + aes(y = n_cases_cum_per_1m)+labs(y = "Cumulative Cases per 1 mil (in thousands)",
+#                                       title = "Timeline of COVID-19: Cumulative Cases per 1 million")
+# cat("\n## Deaths\n")
+# g1 + aes(y = n_deaths_cum)+labs(y = "Cumulative Deaths",
+#                                 title = "Timeline of COVID-19: Cumulative Deaths")
+# cat("\n## Deaths per 1m\n")
+# g1 + aes(y = n_deaths_cum_per_1m)+labs(y = "Cumulative Deaths per 1 mil",
+#                                        title = "Timeline of COVID-19: Cumulative Deaths per 1 million")
+# ---- goal_3-1 ---------------------
 
-
-# ----- q1a -----------
-focal_vars <- c( "n_cases_cum", "n_cases_cum_per_1m", "n_deaths_cum", "n_deaths_cum_per_1m",
-                 "StringencyIndex")
-
-ds1 <- ds0 %>%
-  filter(country_code %in% ds_country$id) %>%
-  # dplyr::filter(country_code %in% c("ITA","FRA")) %>%
-  dplyr::select(country_code, country_label, days_since_exodus, days_since_1case,
-                days_since_1death,
-                n_cases_cum, n_cases_cum_per_1m, n_deaths_cum, n_deaths_cum_per_1m,
-                StringencyIndex
+g3 <- ds_covid_timeline %>%
+  filter(oecd) %>%
+  filter(days_since_1case == 0) %>%
+  mutate(
+    country_label                = forcats::fct_reorder(country_label, days_since_exodus)
+    ,days_to_1death_since_exodus = (-1*days_since_1death) + days_since_exodus
   ) %>%
-  tidyr::pivot_longer(cols = focal_vars, values_to = "value", names_to = "metric")
-
-print_one_wrap <- function(d, country = "ITA"){
-  # d <- ds1; country = "ITA"
-  d1 <- d %>% filter(country_code == country)
-
-  g1 <- d1 %>%
-    ggplot(aes(x = days_since_exodus, y = value))+
-    geom_line()+
-    geom_point(
-      data = d1 %>% filter(days_since_1case == 1),
-      size = 2, fill = "#1b9e77", color = "black", alpha = .5, shape = 21)+
-    geom_point(
-      data = d1 %>% filter(days_since_1death == 1),
-      size = 2, fill = "#d95f02", color = "black", alpha = .5, shape = 21)+
-    geom_vline(xintercept = 58, linetype = "dashed")+
-    facet_wrap(country_label ~ metric, scale = "free_y",ncol = 5)
-  g1
-}
-
-# ds1 %>% print_one_wrap(country = 'ITA')
-
-countries <- unique(ds1$country_code)
-for(country_i in countries){
-  cat("\n## ", country_i,"\n")
-  ds1 %>% print_one_wrap(country = country_i) %>% print()
-  cat("\n")
-}
-
-# ----- q2-response-trend -----------------
-# What the trend response to COVID-10 by each country?
-
-d1 <- ds0 %>%
-  filter(country_code %in% ds_country$id)
-g1 <- d1 %>%
-  ggplot(aes(x = days_since_exodus, y = StringencyIndex))+
-  geom_line()+
-  geom_point(data = d1 %>% filter(days_since_1case == 1), size = 2, fill = "#1b9e77", color = "black", alpha = .5, shape = 21)+
-  geom_point(data = d1 %>% filter(days_since_1death == 1), size = 2, fill = "#d95f02", color = "black", alpha = .5, shape = 21)+
-  facet_wrap(~country_label)+
+  ggplot(aes(x = days_since_exodus, y = country_label))+
+  geom_segment(aes(yend = country_label, xend = 0), linetype=NA, alpha = .8)+
+  geom_segment(aes(yend = country_label, xend = days_to_1death_since_exodus, color = "red"))+
+  geom_point(shape = 21, size =2, alpha = .6, fill = "#1b9e77")+
+  geom_point(aes(x = days_to_1death_since_exodus), shape = 21, size =2, alpha = .6, fill = "#d95f02")+
+  geom_text(aes(label = country_code2, x = days_to_1death_since_exodus), hjust = -1, size = 3, color = "grey60")+
+  scale_x_continuous(breaks = seq(0,140, 20))+
+  guides(color = F)+
   labs(
-    title = "Timeline of OECD countries' respones to COVID-19 as measured by the Stringency Index"
-    ,y = "Stringency Index", x = "Days since first case outside of China (Jan 13, 2020)"
-    , caption = "First dot = 1st confired case, Second dot = 1st confirmed death, line = Pandemic announced by WHO"
-  )+
-  geom_vline(xintercept = 58, linetype = "dashed")
-g1
-
-
-# ----- q2-all -----------------
-
-d2 <- ds0 %>%
-  filter(country_code %in% ds_country$id)
-g2 <- d2 %>%
-  filter(country_code %in% ds_country$id) %>%
-  # filter(country_code == "ITA") %>%
-  ggplot(aes(x = days_since_exodus, y = StringencyIndex, group = country_label))+
-  geom_line( alpha = .2)+
-  geom_point(data = d2 %>% filter(days_since_1case == 1), size = 2, fill = "#1b9e77", color = "black", alpha = .5, shape = 21)+
-  geom_point(data = d2 %>% filter(days_since_1death == 1), size = 2, fill = "#d95f02", color = "black", alpha = .5, shape = 21)+
-  labs(
-    title = "Timeline of OECD countries' respones to COVID-19 as measured by the Stringency Index"
-    ,y = "Stringency Index", x = "Days since first case outside of China (Jan 13, 2020)"
-  )+
-  geom_vline(xintercept = 58, linetype = "dashed")
-g2 <- plotly::ggplotly(g2)
-g2
-
-# ---- q3 -----------
-
-# d1 <- ds0 %>%
-d_out <- ds0 %>%
-  filter(country_code == "ITA") %>%
-  select(country_code, date,n_cases_cum, n_deaths_cum, days_since_1case, days_since_1death)
-
-# Deaths 30 days after 1st death
-d1 <- ds0 %>%
-  group_by(country_code) %>%
-  dplyr::filter(days_since_1death == 30) %>%
-  dplyr::select(country_code, n_deaths_cum, n_population_2018) %>%
-  dplyr::rename(n_deaths_30days_since_1death = n_deaths_cum) %>%
-  dplyr::mutate(n_deaths_30days_since_1death_per100k = n_deaths_30days_since_1death/n_population_2018*100000 ) %>%
-  dplyr::select(-n_population_2018)
-
-# Deaths 60 days after 1st death
-d2 <- ds0 %>%
-  group_by(country_code) %>%
-  dplyr::filter(days_since_1death == 60) %>%
-  dplyr::select(country_code, n_deaths_cum,n_population_2018) %>%
-  dplyr::rename(n_deaths_60days_since_1death = n_deaths_cum) %>%
-  dplyr::mutate(
-    n_deaths_60days_since_1death_per100k = n_deaths_60days_since_1death/n_population_2018*100000
-  ) %>%
-  dplyr::select(-n_population_2018)
-
-# Cases 30 days after 1st case
-d3 <- ds0 %>%
-  group_by(country_code) %>%
-  dplyr::filter(days_since_1case == 30) %>%
-  dplyr::select(country_code, n_cases_cum, n_population_2018) %>%
-  dplyr::rename(n_cases_30days_since_1case = n_cases_cum) %>%
-  dplyr::mutate(
-    n_cases_30days_since_1case_per100k = n_cases_30days_since_1case/n_population_2018*100000
-  ) %>%
-  dplyr::select(-n_population_2018)
-
-# Cases 60 days after 1st case
-d4 <- ds0 %>%
-  group_by(country_code) %>%
-  dplyr::filter(days_since_1case == 60) %>%
-  dplyr::select(country_code, n_cases_cum, n_population_2018) %>%
-  dplyr::rename(n_cases_60days_since_1case = n_cases_cum) %>%
-  dplyr::mutate(
-    n_cases_60days_since_1case_per100k = n_cases_60days_since_1case/n_population_2018*100000
-  ) %>%
-  dplyr::select(-n_population_2018)
-
-# ds0 %>% filter(country_ == "LVA")
-ds_response <- list(d1,d2,d3,d4) %>% Reduce(function(a,b) dplyr::full_join(a,b), .)
-ds_response <- ds_response %>%
-  dplyr::left_join(
-    ds_covid %>% distinct(country_code, geo_id, country)
-  ) %>%
-  dplyr::filter(!is.na(country_code))
-
-ds_response %>% neat_DT
+    title = "COVID Timeline: Days to 1st Case and 1st Death"
+    ,x = "Days to first case since exodus (January 13)", y = NULL
+    ,caption = "(green dot) = 1st confirmed case, (orange dot) = 1st confirmed death"
+  )
+g3
 
 # ---- publish ---------------------------------------
-path_report <- "./analysis/response-stringency-1/response-stringency-1.Rmd"
+path_report <- "./analysis/covid-trajectory/covid-trajectory-1.Rmd"
 rmarkdown::render(
   input = path_report,
   output_format=c("html_document")
