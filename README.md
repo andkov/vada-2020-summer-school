@@ -8,7 +8,7 @@ A repository to accompany selected applied sessions of the [2020 VADA Program Su
 Visualizing the pandemic: comparing trajectories of COVID-19 across countries
 -------------------
 
-Wrangling and visualizing temporal data presents unique challenges to data analysists. This 1-hour workshop addresses the key tasks involved in exploration of timeseries and walks the participants through an applied example of obtaining COVID-19 mortality data from a live source (https://opendata.ecdc.europa.eu/covid19), computing relative timelines and various temporal metrics for individual countries, and designing  information displays for understanding global trends. Data and scripts are provided. Software requirements: R, RStudio, and tidyverse packages. Accompanying GitHub repository: https://github.com/andkov/vada-2020-summer-school
+Wrangling and visualizing temporal data presents unique challenges to data analysists. This 1-hour workshop addresses the key tasks involved in exploration of timeseries and walks the participants through an applied example of obtaining COVID-19 mortality data from a live source (https://opendata.ecdc.europa.eu/covid19), computing relative timelines and various temporal metrics for individual countries, and designing  information displays for understanding global trends. Data and scripts are provided. Software requirements: R, RStudio, and tidyverse packages. 
 
 # About the speaker
 
