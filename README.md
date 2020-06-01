@@ -2,7 +2,7 @@
 
 A repository to accompany selected applied sessions of the [2020 VADA Program Summer School](http://vada.cs.umanitoba.ca/program/program/summer-school/)
 
-![](libs/images/header-1.PNG)
+![](./libs/images/header-1.png)
 
 Visualizing the pandemic: comparing trajectories of COVID-19 across countries
 -------------------
