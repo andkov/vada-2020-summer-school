@@ -1,5 +1,5 @@
-# This script reads two files: patient event table + location map.
-rm(list=ls(all=TRUE)) #Clear the memory of variables from previous run. This is not called by knitr, because it's above the first chunk.
+rm(list=ls(all=TRUE))  # clear the variables from previous runs
+cat("\f") # clear console
 
 # ---- load-packages -----------------------------------------------------------
 library(magrittr) #Pipes
