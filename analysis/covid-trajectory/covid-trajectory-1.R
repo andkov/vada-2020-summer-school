@@ -159,7 +159,7 @@ d1 %>%
   labs(
     title    = "Timeline of COVID-19: Cumulative Deaths per 1 million"
     ,y       = "Cumulative Deaths per 1 mil"
-    ,x       = "Date"
+    ,x       = "Days since the first confirmed case outside of China"
     ,caption = "(first dot) = 1st confirmed case, (second dot) = 1st confirmed death,
     (dotted line) = pandemic announced by WHO, (dashed lines) = 75 and 100th day since Exodus"
   )
@@ -430,7 +430,7 @@ g2 <-
   labs(
     title = "Timeline of COVID-19: Cumulative Cases"
     ,y = "Cumulative Cases (in thousands)"
-    ,x = "Date"
+    ,x = "Days since the first confirmed case outside of China"
     ,caption = "(first dot) = 1st confirmed case, (second dot) = 1st confirmed death,
     (dotted line) = pandemic announced by WHO, (dashed lines) = 75 and 100th day since Exodus"
   )

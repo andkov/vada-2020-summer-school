@@ -3,9 +3,9 @@
 rm(list=ls(all=TRUE)) # clear the memory of variables from previous run.
 cat("\f") # clear console when working in RStudio
 
-# ---- load-sources ------------------------------------------------------------
+# ---- load-sources -----------------------------------------
 
-# ---- load-packages -----------------------------------------------------------
+# ---- load-packages ----------------------------------------
 library(magrittr) #Pipes
 library(readr)
 library(dplyr)
@@ -15,7 +15,7 @@ library(fs)
 config   <- config::get()
 path_url <- "https://opendata.ecdc.europa.eu/covid19/casedistribution/csv"
 
-# ---- load-data ---------------------------------------------------------------
+# ---- load-data ---------------------------------------------
 # download the dataset from the ECDC website to a local temporary file
 ds_ecdc_raw <- readr::read_csv(path_url)
 
