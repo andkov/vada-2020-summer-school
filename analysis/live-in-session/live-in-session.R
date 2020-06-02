@@ -31,8 +31,10 @@ oecd_countries <- c(
 focus_countries <- c("CAN","USA","ITA","TUR", "NLD","CHE")
 
 # ---- load-data -------------------------------------------------------------
-# covid data
-ds_covid <- readr::read_csv("https://github.com/andkov/vada-2020-summer-school/raw/master/data-public/derived/covid-2020-06-01.csv")
+# covid data (downloaded from https://opendata.ecdc.europa.eu/covid19)
+ds_covid <- readr::read_csv("https://github.com/andkov/vada-2020-summer-school/raw/master/data-public/derived/covid-2020-06-02.csv")
+# see `./manipulation/ellis-covid.R` script for data preparations
+
 
 # ---- inspect-data-1 ------------------------------
 ds_covid %>% glimpse()
@@ -80,6 +82,7 @@ g1p <-
   ) %>%
   plotly::layout(margin = list(l = 0, r = 0, b = 100, t = 0, pad = 0))
 g1p
+# see more at  https://plotly-r.com/
 
 # ---- reprex-data ----------------------
 # create reproducible example (reprex) to test out your function
@@ -198,7 +201,7 @@ g2 <-
   labs(
     title = "Timeline of COVID-19: Cumulative Cases"
     ,y = "Cumulative Cases (in thousands)"
-    ,x = "Days since first case outside of China (Jan 13, 2020)"
+    ,x = "Date"
     ,caption = "(first dot) = 1st confirmed case, (second dot) = 1st confirmed death,
     (dotted line) = pandemic announced by WHO, (dashed lines) = 75 and 100th day since Exodus"
   )
@@ -235,7 +238,7 @@ g3 <- ds_covid_timeline %>%
   guides(color = F)+
   labs(
     title = "COVID Timeline: Days to 1st Case and 1st Death"
-    ,x = "Days to first case since exodus (January 13)", y = NULL
+    ,x = "Date", y = NULL
     ,caption = "(green dot) = 1st confirmed case, (orange dot) = 1st confirmed death"
   )
 g3
