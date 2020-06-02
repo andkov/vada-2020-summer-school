@@ -45,41 +45,43 @@ options(width=120) #So the output is 50% wider than the default.
 read_chunk("./analysis/covid-trajectory/covid-trajectory-1.R")
 # read_chunk("../../../analysis/blogposts/florida-suicide-count/fl-suicide-count.R")
 ```
-# Abstract
+# TL;DR
 
-This report demonstrates basic exploration of COVID-19 data, with the focus on computing and graphing data on ___relative___ timelines, in which the "day zero" is unique for each country. 
+This workshop demonstrates basic exploration of COVID-19 data, with the focus on computing and graphing data on ___relative___ timelines, in which the "day zero" is unique for each country. 
 
-### Learning objectives:
-After this tutorial, the reader should be able to:
+# Learning Objectives
 
-1. Compute cumulative counts
-2. Plot interactive trajectories with `plotly`
-3. Compute relative timelines
+After this workshop participants should be able to:
+ 
+1. Plot time series of COVID-19 cases using `ggplot2` package
+2. Add interactive highlights to trajectories using `plotly` package
+3. Compute indicators for key epidemiological events in each country (e.g. day of the first death)
+4. Construct country-specific timelines relative to key epidemiological events
+5. Visualize the sequence of key events for a group of countries
 
+# Visualization Goals
 
-# Goals: Plotting trajectories 
-
-In this tutorial we will have three goals. First, we would like to have a tool to plot multiple trajectories onto the same canvas and explore the differences between trajectories plotted on the same scale.  Second, we would like to create a unique temporal context for each trajectory and express it with respect meaningful anchors, such as first detected case or first confirmed death. Thirdly, we would like to better understand the sequence of these temporal anchors to have a better understanding of how the pandemic unfolded. 
+In this tutorial we will have three visualisation goals. First, we would like to have a tool for plotting multiple trajectories onto the same canvas and explore the differences between trajectories plotted on the same scale.  Second, we would like to create a unique temporal context for each trajectory and express it with respect meaningful anchors, such as first detected case or first confirmed death. Thirdly, we would like to better understand the sequence of these temporal anchors to have a better understanding of how the pandemic unfolded. 
 
 Here are the graphs we will be creating in this tutorial:  
+
 
 ```{r preview-0, echo=FALSE,  message=FALSE, results='show',warning = F, cache=TRUE}
 ```
 
 ## Goal 1 - Absolute, Interactive   
-
+Create a line graph of many trajectories with an interactive tooltip.  
 ```{r preview-1, echo=FALSE,  message=FALSE, results='show',warning = F, cache=TRUE, fig.height = 6}
 ```
 
-
-
 ## Goal 2 - Relative, faceted 
-
-```{r preview-2, echo=F, fig.height=8, fig.width=10, out.width = "1200px", message=FALSE, results='asis',warning = F, cache=TRUE}
+Create a trajectory graph depicting how the epidemic unfolded in each contry relative to its key epidemiological events.  
+```{r preview-2, echo=F, fig.height=4.5, fig.width=6.5, out.width = "900px", message=FALSE, results='asis',warning = F, cache=TRUE}
 ```
 
 
 ## Goal 3 - Temporal sequence
+Create a graph depicting the sequence of key epidemiological events across countries.   
 ```{r preview-3, echo=F, fig.height=6, fig.width=8, out.width = "900px", message=FALSE, results='show',warning = F, cache=TRUE}
 ```
 
@@ -96,13 +98,10 @@ Non-technical readers are welcome to skip this section.
 ```{r declare-globals, echo=echoChunks, results='show', message=FALSE}
 ```
  
-```{r declare-functions, echo=echoChunks, results='show', message=FALSE}
-```
-
 
 # Data  
 
-The data comes from [European Centre for Disease Prevention and Control](https://www.ecdc.europa.eu/en) and can be downloaded [here](https://www.ecdc.europa.eu/en/publications-data/download-todays-data-geographic-distribution-covid-19-cases-worldwide). I discuss the preparation of this data for analysis is a [separate post](). 
+The data comes from [European Centre for Disease Prevention and Control](https://www.ecdc.europa.eu/en), with the source available from [here](https://www.ecdc.europa.eu/en/publications-data/download-todays-data-geographic-distribution-covid-19-cases-worldwide). I demonstrate the preparation of this data for analysis in  [./manipulation/ellis-covid.R](https://github.com/andkov/vada-2020-summer-school/blob/master/manipulation/ellis-covid.R) script of this repository. 
 
 ```{r load-data, echo=echoChunks, results='show', message=FALSE}
 ```
@@ -128,41 +127,41 @@ We focus on 36 country members of the Organization for Economic Co-operation and
 
 # Goal 1
 
-Computing cumulative (running) sum is easily accomplished with `cumsum` function paired with `group_by`, however, watch  out for `NA` values: they will break the running sum, resulting in the `NA` for the rest of the column:
+ [plotly](https://plotly.com/) is a JavaScript library used for creating interactive visualizations and dashboards. Its implementation in `python` and `R`, the latter offered via `plotly` package. Its syntax is very similar to `ggplot2`, but nevertheless sufficiently different to be able to distract you into a (potentially lenghty) side quest. Luckily, there is a magic function `plotly::ggplotly` that transforms a graph built in `ggplot2` into an interactive `plotly` object. 
+ 
+To demonstrate, let us first build a basic graph with multiple timeseries: 
 ```{r goal_1-1, echo=TRUE, message=FALSE, results='show',warning = F, cache=TRUE}
 ```
-To avoid this, we use convert `NA` to `0` on the fly with `tidyr::replace_na()` function: 
-```{r goal_1-2, echo=TRUE, message=FALSE, results='show',warning = F, cache=TRUE}
+
+And now we enhanse this plot with  highlight component using the `plotly::highlight()` function and some additional options:
+```{r goal_1-2, echo=TRUE, message=FALSE, results='show',warning = F, cache=TRUE, fig.height=6}
 ```
 
-This option is better than converting `NA`s to zero during the data preparation step, as this would mask the absence of reporting, overwriting it with a definitive value of `0` cases. 
-
-Now, with the cumulative case available, we can plot the trajectory in a interactive graph with `plotly` package: 
-```{r goal_1-3, echo=TRUE,  message=FALSE, results='show',warning = F, cache=TRUE, fig.height = 6}
-```
-Note that we add the highlight component with the `plotly::highlight()` function.  
-
-If you are familiar with `ggplot2`, the syntax of `plotly` should not be too confusing, however, it does take some time to get used to. 
 
 For more options and syntax guide, see https://plotly-r.com/client-side-linking.html. There is also a package for rendering `ggplot2` into interactive graphs ([`ggplotly`](https://rdrr.io/cran/plotly/man/ggplotly.html)), which offers less flexibility in display design compared to creating graphs directly with `plotly`, but is much simpler to implement. 
 
-```{r goal_1-4, echo=TRUE,  message=FALSE, results='show',warning = F, cache=TRUE, fig.height = 6}
-```
 
 # Goal 2 
 
 It is often makes sense to compare the progression of epidemics across countries using a meaningful "time zero", for example the day of the first confirmed case or the first confirmed death in the country. To help us carry out the computation, let us construct a fictional example that we can use to develop the script
 
+## Reprex 
+
 ```{r reprex-1,echo = echoChunks, message=FALSE, results='show',warning = F, cache=TRUE}
 ```
 
-We already know how to compute cumulative counts
+Computing cumulative (running) sum is easily accomplished with `cumsum` function paired with `group_by`, however, watch  out for `NA` values: they will break the running sum, resulting in the `NA` for the rest of the column. To avoid this, we use convert `NA` to `0` on the fly with `tidyr::replace_na()` function
+
 ```{r reprex-2,echo = echoChunks, message=FALSE, results='show',warning = F, cache=TRUE, attr.source='.numberLines'}
 ```
+
+This option is better than converting `NA`s to zero during the data preparation step, as this would mask the absence of reporting, overwriting it with a definitive value of `0` cases. 
+
 Now we will use a simple logical test to create a logical variable indicating when the running total exceeded the value of the chosen threshold. 
 ```{r reprex-3,echo = echoChunks, message=FALSE, results='show',warning = F, cache=TRUE, attr.source='.numberLines'}
 ```
-It may make sense to use other operationalization the "onset" event.. For example, we can define it as "the date of the 10th case" or "3rd death" or  ".1% of population infected". 
+It may make sense to use other operationalization the "onset" event.. For example, we can define it as "the date of the 10th case" or ".01% of population infected" or "5th days of registering new cases in a row".  
+
 Now with the column `onset_case` marking whether the running total is higher than a threshold, we can identify the first occurrence of `TRUE` : 
 ```{r reprex-4,echo = echoChunks, message=FALSE, results='show',warning = F, cache=TRUE, attr.source='.numberLines'}
 ```
@@ -180,23 +179,46 @@ This allows us for a very straightforward computation of the distance between an
 ```
 Finally, we can re-express these steps more succinctly, however, it might be advisible to leave these step in comments in case you need to retrace your steps or debug an error down the stream
 
-```{r reprex-7,echo = echoChunks, message=FALSE, results='show',warning = F, cache=TRUE, attr.source='.numberLines'}
+```{r reprex-8,echo = echoChunks, message=FALSE, results='show',warning = F, cache=TRUE, attr.source='.numberLines'}
 ```
 
 ## Compute relative timelines
 
+The `reprex` data set we have created allows to inspect the logic of our script manually and have a much higher confidence that it does what we expect it to do. Now we can apply this solution to the real data. Notice also, that we create a variation of this solution, apply to the new criterion of the "day zero" - the day of the first confirmed mortality in the country. 
+
 ```{r compute-epi-timeline,echo = echoChunks, message=FALSE, results='show',warning = F, cache=TRUE, attr.source='.numberLines'}
 ```
+Also notice that we create a few other helper variables: two other operationalization of the absolute time line (`days_since_exodus` and `days_since_pandemic`) as well as population adjustments for cumulative cases and deaths in each country(`n_cases_cum_per_1m` and `n_deaths_cum_per_1m`)
+
 
 ## Goal 2 graph 
 
-```{r goal_2-1, echo=T, fig.height=8, fig.width=10, out.width = "1200px", message=FALSE, results='asis',warning = F, cache=TRUE, attr.source='.numberLines'}
+With all variable prepared for plotting, let us develop the barebones graph first, to help us see the structure and the components: 
+```{r goal_2-1, echo=T, fig.height=4, fig.width=6, out.width = "900px", message=FALSE, results='show',warning = F, cache=TRUE, attr.source='.numberLines'}
+```
+
+Now let's enhance the appearance of the plot:  
+```{r goal_2-2, echo=T, fig.height=4, fig.width=6, out.width = "900px", message=FALSE, results='show',warning = F, cache=TRUE, attr.source='.numberLines'}
 ```
 
 # Goal 3
-
+Similarly with the plot from Goal 2, let us first sketch the essential components
 ```{r goal_3-1, echo=T, fig.height=6, fig.width=8, out.width = "900px", message=FALSE, results='show',warning = F, cache=TRUE}
 ```
+and then enhance the appearance:  
+```{r goal_3-2, echo=T, fig.height=6, fig.width=8, out.width = "900px", message=FALSE, results='show',warning = F, cache=TRUE}
+```
+
+# Exercises
+
+To help you further you mastery of these graphical forms consider the following exercises:  
+
+1. Using the graph from Goal 1, re-design the interactive highlights so that they depicts both the trajectory line and the dots for temporal anchors ( day of first case and day of first death). Hint: you can no longer filter within the geom, so you need to create a new variable __before__ tranforming the dataset with `highlight_key`.    
+
+2. Re-draw the graph in Goal 2 with a different operationalization of the relative timeline: Days since 5 daily new deaths first reported.  
+
+3. Redraw the graph in Goal 3 to sort the countries according to the descending distance between the day of the first case and the day of the first death.   
+
 
 session information
 ===========================================================================
