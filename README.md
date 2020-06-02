@@ -45,7 +45,7 @@ The data comes from [European Centre for Disease Prevention and Control](https:/
 If you are considering an anlytical project involving world-wide COVID-19, consider cloning the repository and studying the following scripts
 - I have prepared an [narrated version of this workshop](https://raw.githack.com/andkov/vada-2020-summer-school/master/analysis/covid-trajectory/covid-trajectory-1.html), which you can study later on your own.
 - [./manipulation/ellis-geography](./manipulation/ellis-geography.R) - prepares a reference table with exhaustive list of countries, their two- and three-letter codes, continents, and other useful info. If you are doing cross-country comparisons, consider investing time studying this data prep script, it may save you a lot time and frustration.
-- Check out my [workshopw from the VADA 2019 summer school](https://github.com/andkov/vada-2019-summer-school/), in which I demonstrate the technique for functionalizing graphing functions. 
+- Check out my [workshop from the VADA 2019 summer school](https://github.com/andkov/vada-2019-summer-school/), in which I demonstrate the technique for functionalizing graphing functions. 
 
 # About the speaker
 <img src ="libs/images/akoval.jpg" width = "10%">     <img src ="libs/images/ccie-logo.png" width = "50%">
