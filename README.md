@@ -42,7 +42,7 @@ The data comes from [European Centre for Disease Prevention and Control](https:/
 
 If you are considering an anlytical project involving world-wide COVID-19, consider cloning the repository and studying the following scripts
 - I have prepared an [narrated version of this workshop](https://raw.githack.com/andkov/vada-2020-summer-school/master/analysis/covid-trajectory/covid-trajectory-1.html), which you can study later on your own.
-- [./manipulation/ellis-geography](./manipulation/ellis-geography.R) - prepares a reference table with exhaustive list of countries, their two- and three-letter codes, continents,
+- [./manipulation/ellis-geography](./manipulation/ellis-geography.R) - prepares a reference table with exhaustive list of countries, their two- and three-letter codes, continents, and other useful info. If you are doing cross-country comparisons, consider investing time studying this data prep script, it may save you a lot time and frustration.
 - Check out my [workshopw from the VADA 2019 summer school](https://github.com/andkov/vada-2019-summer-school/), in which I demonstrate the technique for functionalizing graphing functions. 
 
 # About the speaker
@@ -54,9 +54,5 @@ Andriy Koval is an Assistant Professor in the Department of Health Management an
 [g2]:./libs/images/goal_2.PNG
 [g3]:./libs/images/goal_3.PNG
 
-# Quick Links
-- [Installation Resources](https://github.com/OuhscBbmc/RedcapExamplesAndPatterns/blob/master/DocumentationGlobal/ResourcesInstallation.md)
-- [RAnalysisSkeleton](https://github.com/wibeasley/ranalysisskeleton)
-- [Textbook for introductory statistics](https://github.com/OuhscBbmc/DeSheaToothakerIntroStats/blob/master/thumbnails/thumbnails.md)
-- [Data Science Practices Style Guide](https://ouhscbbmc.github.io/data-science-practices-1/style-guide.htm)
-
+# Resources
+Check out my [blogpost](http://andriy.rbind.io/post/2020-05-21-online-course-and-textbooks/) with online books and courses on `rstats` that I find particulary useful. 
