@@ -128,3 +128,5 @@ ds_covid %>%
 # ---- save-to-disk ------------------------
 ds_covid %>% readr::write_csv(config$path_input_covid)
 
+# saved on June 1 to create a stable data source for the workshop:
+# ds_covid %>% readr::write_csv("./data-public/derived/covid-2020-06-01.csv")
