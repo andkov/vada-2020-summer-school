@@ -1,6 +1,6 @@
 # Data Source
 # https://www.ecdc.europa.eu/en/publications-data/download-todays-data-geographic-distribution-covid-19-cases-worldwide
-rm(list=ls(all=TRUE)) #Clear the memory of variables from previous run.
+rm(list=ls(all=TRUE)) # clear the memory of variables from previous run.
 cat("\f") # clear console when working in RStudio
 
 # ---- load-sources ------------------------------------------------------------
@@ -17,15 +17,15 @@ path_url <- "https://opendata.ecdc.europa.eu/covid19/casedistribution/csv"
 
 # ---- load-data ---------------------------------------------------------------
 # download the dataset from the ECDC website to a local temporary file
-ds_ocdc_raw <- readr::read_csv(path_url)
+ds_ecdc_raw <- readr::read_csv(path_url)
 
 # to create the folder if it does not exist
 if( !fs::dir_exists(  fs::path_dir(config$path_input_covid)  ) ){
   fs::dir_create( fs::path_dir(config$path_input_covid) )
 }
-ds_ocdc_raw %>% readr::write_csv(config$path_input_covid) # to save a local version
+ds_ecdc_raw %>% readr::write_csv(config$path_input_covid) # to save a local version
 checkmate::assert_file(config$path_input_covid) # to verify success
-rm(ds_ocdc_raw)
+rm(ds_ecdc_raw)
 # run above line once per update
 
 # input local saved file for the current date
