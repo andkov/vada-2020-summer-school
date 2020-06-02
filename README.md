@@ -30,11 +30,9 @@ During the session, we will walk through creating three graphs:
 
 
 # Getting started
-
-1. Open `./analysis/live-in-session/live-in-session.R` script in RStudio. Depending on your familiarity with programming, you have two options to do so: 
-  - 1A. Launch RStudio, start a new R script, copy-paste the contents of [this file](https://raw.githubusercontent.com/andkov/vada-2020-summer-school/master/analysis/live-in-session/live-in-session.R)  
-  - 1B. Clone this repo, launch the project in RStudio, open `./analysis/live-in-session/live-in-session.R`. 
-
+Please open `./analysis/live-in-session/live-in-session.R` script in RStudio. Depending on your familiarity with programming, you have two options to do so: 
+  - Opion 1. Launch RStudio, start a new R script and  copy-paste the contents of [this file](https://raw.githubusercontent.com/andkov/vada-2020-summer-school/master/analysis/live-in-session/live-in-session.R)   
+  - Option 2. Clone this repo, launch the project in RStudio and open `./analysis/live-in-session/live-in-session.R`. If this instruction confuses you, please use Option 1.   
 
 
 # Data  
@@ -43,6 +41,7 @@ The data comes from [European Centre for Disease Prevention and Control](https:/
 # Bonus tracks  
 
 If you are considering an anlytical project involving world-wide COVID-19, consider cloning the repository and studying the following scripts
+- I have prepared an [narrated version of this workshop](https://raw.githack.com/andkov/vada-2020-summer-school/master/analysis/covid-trajectory/covid-trajectory-1.html), which you can study later on your own.
 - [./manipulation/ellis-geography](./manipulation/ellis-geography.R) - prepares a reference table with exhaustive list of countries, their two- and three-letter codes, continents,
 - Check out my [workshopw from the VADA 2019 summer school](https://github.com/andkov/vada-2019-summer-school/), in which I demonstrate the technique for functionalizing graphing functions. 
 
