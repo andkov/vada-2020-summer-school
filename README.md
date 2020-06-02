@@ -30,11 +30,9 @@ During the session, we will walk through creating three graphs:
 
 
 # Getting started
-
-1. Open `./analysis/live-in-session/live-in-session.R` script in RStudio. Depending on your familiarity with programming, you have two options to do so: 
-  - 1A. Launch RStudio, start a new R script, copy-paste the contents of [this file](https://raw.githubusercontent.com/andkov/vada-2020-summer-school/master/analysis/live-in-session/live-in-session.R)  
-  - 1B. Clone this repo, launch the project in RStudio, open `./analysis/live-in-session/live-in-session.R`. 
-
+Please open `./analysis/live-in-session/live-in-session.R` script in RStudio. Depending on your familiarity with programming, you have two options to do so: 
+  - Opion 1. Launch RStudio, start a new R script and  copy-paste the contents of [this file](https://raw.githubusercontent.com/andkov/vada-2020-summer-school/master/analysis/live-in-session/live-in-session.R)   
+  - Option 2. Clone this repo, launch the project in RStudio and open `./analysis/live-in-session/live-in-session.R`. If this instruction confuses you, please use Option 1.   
 
 
 # Data  
@@ -43,21 +41,20 @@ The data comes from [European Centre for Disease Prevention and Control](https:/
 # Bonus tracks  
 
 If you are considering an anlytical project involving world-wide COVID-19, consider cloning the repository and studying the following scripts
-- [./manipulation/ellis-geography](./manipulation/ellis-geography.R) - prepares a reference table with exhaustive list of countries, their two- and three-letter codes, continents,
+- I have prepared an [narrated version of this workshop](https://raw.githack.com/andkov/vada-2020-summer-school/master/analysis/covid-trajectory/covid-trajectory-1.html), which you can study later on your own.
+- [./manipulation/ellis-geography](./manipulation/ellis-geography.R) - prepares a reference table with exhaustive list of countries, their two- and three-letter codes, continents, and other useful info. If you are doing cross-country comparisons, consider investing time studying this data prep script, it may save you a lot time and frustration.
 - Check out my [workshopw from the VADA 2019 summer school](https://github.com/andkov/vada-2019-summer-school/), in which I demonstrate the technique for functionalizing graphing functions. 
 
 # About the speaker
 
-Andriy Koval is an Assistant Professor in the Department of Health Management and Informatics. Dr. Koval has degrees in Quantitative Methods (Ph.D., Vanderbilt), Psychology (M.A., MTSU) and Mass Communication (B.S., MTSU). His research combines longitudinal modeling, reproducible analytics and  data visualization to study how people engage health systems and services over the course of their lives. 
+![](./libs/images/akoval.jpg)
+
+Andriy Koval is an Assistant Professor in the Department of Health Management and Informatics at the University of Central Florida. Dr. Koval earned degrees in Quantitative Methods (Ph.D., Vanderbilt), Psychology (M.A., MTSU) and Mass Communication (B.S., MTSU). His research combines longitudinal modeling, reproducible analytics and  data visualization to study how people engage health systems and services over the course of their lives. He lives in Orlando, FL. 
 
 
 [g1]:./libs/images/goal_1.PNG
 [g2]:./libs/images/goal_2.PNG
 [g3]:./libs/images/goal_3.PNG
 
-# Quick Links
-- [Installation Resources](https://github.com/OuhscBbmc/RedcapExamplesAndPatterns/blob/master/DocumentationGlobal/ResourcesInstallation.md)
-- [RAnalysisSkeleton](https://github.com/wibeasley/ranalysisskeleton)
-- [Textbook for introductory statistics](https://github.com/OuhscBbmc/DeSheaToothakerIntroStats/blob/master/thumbnails/thumbnails.md)
-- [Data Science Practices Style Guide](https://ouhscbbmc.github.io/data-science-practices-1/style-guide.htm)
-
+# Resources
+Check out my [blogpost](http://andriy.rbind.io/post/2020-05-21-online-course-and-textbooks/) with online books and courses on `rstats` that I find particulary useful. 
