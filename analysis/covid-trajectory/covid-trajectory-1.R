@@ -1,5 +1,5 @@
-# This script reads two files: patient event table + location map.
-rm(list=ls(all=TRUE)) #Clear the memory of variables from previous run. This is not called by knitr, because it's above the first chunk.
+rm(list=ls(all=TRUE))  # clear the variables from previous runs
+cat("\f") # clear console
 
 # ---- load-packages -----------------------------------------------------------
 library(magrittr) #Pipes
@@ -9,7 +9,7 @@ library(lubridate) # for working with dates
 library(plotly) # interactive graphs
 library(crosstalk)
 # ---- load-sources ------------------------------------------------------------
-config <- config::get()
+config <- config::get() # common definitions stored in `./config.yml`
 
 # ---- declare-globals --------------------
 # to be applied to every graph we will make
@@ -31,6 +31,7 @@ oecd_countries <- c(
   "SVN", "ESP", "SWE", "CHE", "TUR", "GBR", "USA", "RUS", "ZAF"
 )
 focus_countries <- c("CAN","USA","ITA","TUR", "NLD","CHE")
+
 # adds neat styling to your knitr table
 neat <- function(x, output_format = "html"){
   # knitr.table.format = output_format
@@ -158,7 +159,7 @@ d1 %>%
   labs(
     title    = "Timeline of COVID-19: Cumulative Deaths per 1 million"
     ,y       = "Cumulative Deaths per 1 mil"
-    ,x       = "Days since first case outside of China (Jan 13, 2020)"
+    ,x       = "Date"
     ,caption = "(first dot) = 1st confirmed case, (second dot) = 1st confirmed death,
     (dotted line) = pandemic announced by WHO, (dashed lines) = 75 and 100th day since Exodus"
   )
@@ -429,7 +430,7 @@ g2 <-
   labs(
     title = "Timeline of COVID-19: Cumulative Cases"
     ,y = "Cumulative Cases (in thousands)"
-    ,x = "Days since first case outside of China (Jan 13, 2020)"
+    ,x = "Date"
     ,caption = "(first dot) = 1st confirmed case, (second dot) = 1st confirmed death,
     (dotted line) = pandemic announced by WHO, (dashed lines) = 75 and 100th day since Exodus"
   )

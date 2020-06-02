@@ -143,13 +143,30 @@ For more options and syntax guide, see https://plotly-r.com/client-side-linking.
 
 # Goal 2 
 
-It is often makes sense to compare the progression of epidemics across countries using a meaningful "time zero", for example the day of the first confirmed case or the first confirmed death in the country. To help us carry out the computation, let us construct a fictional example that we can use to develop the script
+It is often makes sense to compare the progression of epidemics across countries using a meaningful "time zero", for example the day of the first confirmed case or the first confirmed death in the country. To create the Goal 2 graph we first need to derive a number of new variables. The following subgoals will help learn the operations used to derive them 
+
+___Subgoals___:  
+
+#### 1. Compute comulative cases (Running total)  
+
+#### 2. Create onset markers (which values exceed a chosen threshold?)  
+
+#### 3. First case marker (what row is the first to exceed a chosen threshold?)  
+
+#### 4. Date of first case (what is the date associated with exceeding a chosen threshold?)  
+
+#### 5. Number of days since 1st case (how many days have passed between current date and the date of exceeding a threshold?)  
+
+
 
 ## Reprex 
 
+To help us carry out the computation, let us construct a fictional example that we can use to develop the script
 ```{r reprex-1,echo = echoChunks, message=FALSE, results='show',warning = F, cache=TRUE}
 ```
 
+#### 1. Compute comulative cases (Running total)
+ 
 Computing cumulative (running) sum is easily accomplished with `cumsum` function paired with `group_by`, however, watch  out for `NA` values: they will break the running sum, resulting in the `NA` for the rest of the column. To avoid this, we use convert `NA` to `0` on the fly with `tidyr::replace_na()` function
 
 ```{r reprex-2,echo = echoChunks, message=FALSE, results='show',warning = F, cache=TRUE, attr.source='.numberLines'}
@@ -157,15 +174,21 @@ Computing cumulative (running) sum is easily accomplished with `cumsum` function
 
 This option is better than converting `NA`s to zero during the data preparation step, as this would mask the absence of reporting, overwriting it with a definitive value of `0` cases. 
 
+#### 2. Create onset markers (which values exceed a chosen threshold?)  
+
 Now we will use a simple logical test to create a logical variable indicating when the running total exceeded the value of the chosen threshold. 
 ```{r reprex-3,echo = echoChunks, message=FALSE, results='show',warning = F, cache=TRUE, attr.source='.numberLines'}
 ```
 It may make sense to use other operationalization the "onset" event.. For example, we can define it as "the date of the 10th case" or ".01% of population infected" or "5th days of registering new cases in a row".  
 
+#### 3. First case marker (what row is the first to exceed a chosen threshold?)  
+
 Now with the column `onset_case` marking whether the running total is higher than a threshold, we can identify the first occurrence of `TRUE` : 
 ```{r reprex-4,echo = echoChunks, message=FALSE, results='show',warning = F, cache=TRUE, attr.source='.numberLines'}
 ```
 Notice, that we use the property of `logical` class: when used in mathematical expression, `FALSE` assumes the value of `0`, while `TRUE` is interpreted as `1`. 
+
+#### 4. Date of first case (what is the date associated with exceeding a chosen threshold?)  
 
 Now we can use this indicator to extract the date associated with this row:
 ```{r reprex-5,echo = echoChunks, message=FALSE, results='show',warning = F, cache=TRUE, attr.source='.numberLines'}
@@ -174,9 +197,14 @@ Now we can use this indicator to extract the date associated with this row:
 There will be only one date associated with traspassing the threshold, so we populate the rest of the cells with it
 ```{r reprex-6,echo = echoChunks, message=FALSE, results='show',warning = F, cache=TRUE, attr.source='.numberLines'}
 ```
+
+#### 5. Number of days since 1st case (how many days have passed between current date and the date of exceeding a threshold?)  
+
 This allows us for a very straightforward computation of the distance between any given date and the date of the "onset", in this case the date of the first confirmed case:
 ```{r reprex-7,echo = echoChunks, message=FALSE, results='show',warning = F, cache=TRUE, attr.source='.numberLines'}
 ```
+
+#### Re-write for brevity  
 Finally, we can re-express these steps more succinctly, however, it might be advisible to leave these step in comments in case you need to retrace your steps or debug an error down the stream
 
 ```{r reprex-8,echo = echoChunks, message=FALSE, results='show',warning = F, cache=TRUE, attr.source='.numberLines'}
@@ -184,7 +212,7 @@ Finally, we can re-express these steps more succinctly, however, it might be adv
 
 ## Compute relative timelines
 
-The `reprex` data set we have created allows to inspect the logic of our script manually and have a much higher confidence that it does what we expect it to do. Now we can apply this solution to the real data. Notice also, that we create a variation of this solution, apply to the new criterion of the "day zero" - the day of the first confirmed mortality in the country. 
+The `reprex` data set we have created allows to inspect the logic of our script manually and have a much higher confidence that it does what we expect it to do. Now we can apply this solution to the real data. Notice that we create a variation of this solution, applying another definition of the "day zero" - the day of the first confirmed mortality in the country. 
 
 ```{r compute-epi-timeline,echo = echoChunks, message=FALSE, results='show',warning = F, cache=TRUE, attr.source='.numberLines'}
 ```
@@ -193,7 +221,7 @@ Also notice that we create a few other helper variables: two other operationaliz
 
 ## Goal 2 graph 
 
-With all variable prepared for plotting, let us develop the barebones graph first, to help us see the structure and the components: 
+With all variable prepared for plotting, let us develop the barebones graph first, to help us see the composition of the plot: 
 ```{r goal_2-1, echo=T, fig.height=4, fig.width=6, out.width = "900px", message=FALSE, results='show',warning = F, cache=TRUE, attr.source='.numberLines'}
 ```
 
