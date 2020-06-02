@@ -47,7 +47,8 @@ If you are considering an anlytical project involving world-wide COVID-19, consi
 
 # About the speaker
 
-Andriy Koval is an Assistant Professor in the Department of Health Management and Informatics. Dr. Koval has degrees in Quantitative Methods (Ph.D., Vanderbilt), Psychology (M.A., MTSU) and Mass Communication (B.S., MTSU). His research combines longitudinal modeling, reproducible analytics and  data visualization to study how people engage health systems and services over the course of their lives. 
+![](./libs/images/akoval.jpg)
+Andriy Koval is an Assistant Professor in the Department of Health Management and Informatics at the University of Central Florida. Dr. Koval earned degrees in Quantitative Methods (Ph.D., Vanderbilt), Psychology (M.A., MTSU) and Mass Communication (B.S., MTSU). His research combines longitudinal modeling, reproducible analytics and  data visualization to study how people engage health systems and services over the course of their lives. He lives in Orlando, FL. 
 
 
 [g1]:./libs/images/goal_1.PNG
