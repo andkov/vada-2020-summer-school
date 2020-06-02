@@ -474,7 +474,7 @@ g3 <- ds_covid_timeline %>%
   guides(color = F)+
   labs(
     title = "COVID Timeline: Days to 1st Case and 1st Death"
-    ,x = "Days to first case since exodus (January 13)", y = NULL
+    ,x = "Date", y = NULL
     ,caption = "(green dot) = 1st confirmed case, (orange dot) = 1st confirmed death"
   )
 g3
