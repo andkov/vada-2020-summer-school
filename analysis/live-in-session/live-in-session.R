@@ -1,7 +1,7 @@
 rm(list=ls(all=TRUE))  # clear the variables from previous runs
 cat("\f") # clear console
 
-# ---- load-packages -----------------------------------------------------------
+# ---- load-packages ----------------------------------------
 library(magrittr) #Pipes
 library(ggplot2) #For graphing
 library(dplyr) # for shorter function names. but still prefer dplyr:: stems
@@ -30,7 +30,7 @@ oecd_countries <- c(
 )
 focus_countries <- c("CAN","USA","ITA","TUR", "NLD","CHE")
 
-# ---- load-data -------------------------------------------------------------
+# ---- load-data ---------------------------------------------
 # covid data (downloaded from https://opendata.ecdc.europa.eu/covid19)
 ds_covid <- readr::read_csv("https://github.com/andkov/vada-2020-summer-school/raw/master/data-public/derived/covid-2020-06-02.csv")
 # see `./manipulation/ellis-covid.R` script for data preparations
@@ -56,8 +56,22 @@ ds_covid <- ds_covid %>%
 # Subgoals
 # 1. Make ggplot
 # 2. Enhance with plotly
+g1 <-
+  ds_covid %>%
+  filter(oecd) %>%
+  plotly::highlight_key(~ country_label) %>%
+  ggplot(aes(x = date , y = n_cases, group = country_label))+
+  geom_line()
+g1
 
-
+g1p <- plotly::ggplotly(g1)
+g1p %>% plotly::highlight(                         # add highlight functionality
+  on             = "plotly_hover"          # or "plotly_hover"
+  ,dynamic       = TRUE                    # adds color option
+  ,selectize     = TRUE                    # select what to highlight
+  ,defaultValues = "Canada"                # highlights in the beginning
+)  %>%
+  plotly::layout(margin = list(l = 0, r = 0, b = 100, t = 0, pad = 0))
 # ----- goal_1-solution ---------------
 g1 <-
   ds_covid %>%
@@ -116,8 +130,14 @@ d_reprex
 # 3. First case marker
 # 4. Date of first case
 # 5. Number of days since 1st case
-
-
+d_reprex_timeline <- d_reprex %>%
+  group_by(country_code) %>%
+  mutate(
+    n_cases_cum = cumsum(tidyr::replace_na(n_cases, 0)),
+    onset_case = n_cases_cum > 0
+  ) %>%
+  ungroup()
+d_reprex_timeline
 # ---- reprex-solution ----------------------
 d_reprex_timeline <- d_reprex %>%
   group_by(country_code) %>%
