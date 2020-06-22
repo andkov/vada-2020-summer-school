@@ -1,14 +1,16 @@
-
-
 A repository to accompany selected applied sessions of the [2020 VADA Program Summer School](http://vada.cs.umanitoba.ca/program/program/summer-school/)
 
 ![](./libs/images/header-1.png)
-<!--[](./libs/images/summer-school-banner.png)-->
 
 Visualizing the pandemic: comparing trajectories of COVID-19 across countries
 -------------------
 
-Wrangling and visualizing temporal data presents unique challenges to data analysists. This 1-hour workshop addresses the key tasks involved in exploration of timeseries and walks the participants through an applied example of obtaining COVID-19 mortality data from a live source (https://opendata.ecdc.europa.eu/covid19), computing relative timelines and various temporal metrics for individual countries, and designing  information displays for understanding global trends. Data and scripts are provided. Software requirements: R, RStudio, and tidyverse packages. 
+Wrangling and visualizing temporal data presents unique challenges to data analysists. This 1-hour workshop addresses the key tasks involved in exploration of timeseries and walks the participants through an applied example of obtaining COVID-19 mortality data from a live source (https://opendata.ecdc.europa.eu/covid19), computing relative timelines and various temporal metrics for individual countries, and designing  information displays for understanding global trends. Data and scripts are provided. Software requirements: R, RStudio, and tidyverse packages.   
+
+By Andriy Koval, Ph.D.   
+
+<img src ="libs/images/akoval.jpg" width = "10%">     <img src ="libs/images/ccie-logo.png" width = "50%">
+
 
 # Learning Objectives
 
@@ -43,14 +45,12 @@ The data comes from [European Centre for Disease Prevention and Control](https:/
 If you are considering an anlytical project involving world-wide COVID-19, consider cloning the repository and studying the following scripts
 - I have prepared an [narrated version of this workshop](https://raw.githack.com/andkov/vada-2020-summer-school/master/analysis/covid-trajectory/covid-trajectory-1.html), which you can study later on your own.
 - [./manipulation/ellis-geography](./manipulation/ellis-geography.R) - prepares a reference table with exhaustive list of countries, their two- and three-letter codes, continents, and other useful info. If you are doing cross-country comparisons, consider investing time studying this data prep script, it may save you a lot time and frustration.
-- Check out my [workshopw from the VADA 2019 summer school](https://github.com/andkov/vada-2019-summer-school/), in which I demonstrate the technique for functionalizing graphing functions. 
+- Check out my [workshop from the VADA 2019 summer school](https://github.com/andkov/vada-2019-summer-school/), in which I demonstrate the technique for functionalizing graphing functions. 
 
 # About the speaker
-
-![](./libs/images/akoval.jpg)
+<img src ="libs/images/akoval.jpg" width = "10%">     <img src ="libs/images/ccie-logo.png" width = "50%">
 
 Andriy Koval is an Assistant Professor in the Department of Health Management and Informatics at the University of Central Florida. Dr. Koval earned degrees in Quantitative Methods (Ph.D., Vanderbilt), Psychology (M.A., MTSU) and Mass Communication (B.S., MTSU). His research combines longitudinal modeling, reproducible analytics and  data visualization to study how people engage health systems and services over the course of their lives. He lives in Orlando, FL. 
-
 
 [g1]:./libs/images/goal_1.PNG
 [g2]:./libs/images/goal_2.PNG
