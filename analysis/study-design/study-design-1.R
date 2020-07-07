@@ -47,7 +47,9 @@ adate <- "2020-01-15"
 adate %>% print_wday()
 adate %>% add_ndays(1)
 
-add_nsessions <- function(x,n,patient_name,final_session=F, score_value = 20){
+add_nsessions <- function(
+  x,n,patient_name,final_session=F, score_value = 20, session_modality="f2f"
+  ){
   # x  <- "2020-01-15"
   # n  <- 4
   # patient_name <- "A"
@@ -63,22 +65,43 @@ add_nsessions <- function(x,n,patient_name,final_session=F, score_value = 20){
       session_number = dplyr::row_number(),
       patient = patient_name,
       initial_session = ifelse(session_number ==1, TRUE, FALSE),
-      final_session = ifelse(session_number == n+1, TRUE, FALSE),
-      score = score_value
+      final_session = ifelse((session_number == n+1 & final_session), TRUE, FALSE),
+      score = score_value,
+      modality = session_modality
     ) %>%
-    select(patient, date, session_number, initial_session, final_session, score) %>%
+    select(patient, date, session_number, modality, initial_session, final_session, score) %>%
     print()
 
 }
-adate %>% add_nsessions(7,"A",F)
+adate %>% add_nsessions(7,"A",T)
 
 lss <- list()
 
-lss[[1]] <- "2020-01-02" %>% add_nsessions(7,  "A",F, 20 )
-lss[[2]] <- "2020-01-07" %>% add_nsessions(8,  "B",T, 25)
-lss[[3]] <- "2020-01-25" %>% add_nsessions(10, "C",T, 40)
-lss[[4]] <- "2020-02-23" %>% add_nsessions(9,  "D",F, 50)
-lss[[5]] <- "2020-03-01" %>% add_nsessions(8,  "E",F, 10)
+lss[[1]] <- "2020-01-02" %>% add_nsessions(
+  7,  "A", F,
+  c(20, 17, 19, 25, 21, 18, 15, 10),
+  c("f2f","f2f","f2f","f2f","f2f","f2f","f2f","f2f")
+)
+lss[[2]] <- "2020-01-07" %>% add_nsessions(
+  8,  "B",T,
+  c(35, 38, 32, 34, 28, 25, 22, 25, 19),
+  c("TMH","TMH","TMH","TMH","TMH","TMH","TMH","TMH","TMH")
+)
+lss[[3]] <- "2020-01-25" %>% add_nsessions(
+  10, "C",T,
+  c(45, 48, 42, 34,  38, 35, 32, 28,  33, 26, 22),
+  c("TMH","TMH","TMH","TMH", "TMH","TMH","TMH","TMH", "TMH","TMH","TMH")
+)
+lss[[4]] <- "2020-02-23" %>% add_nsessions(
+  9,  "D",F,
+  c(50, 47, 42, 41,  46, 48, 48, 52,  51, 49),
+  c("f2f","f2f","f2f","f2f","TMH","TMH","TMH","TMH","TMH", "TMH")
+  )
+lss[[5]] <- "2020-03-01" %>% add_nsessions(
+  8,  "E",F,
+  c(32, 35, 36, 37, 36, 39, 38, 42, 45),
+  c("f2f","f2f","f2f","f2f","TMH","TMH","TMH","TMH","TMH")
+)
 lss[[6]] <- "2020-03-27" %>% add_nsessions(7,  "F",F, 30)
 lss[[7]] <- "2020-04-04" %>% add_nsessions(9,  "G",F, 35)
 
@@ -89,19 +112,21 @@ g2 <-
   ggplot(aes(
     x = date
     ,y = score
+
   ))+
   geom_line(aes(group = patient))+
-  geom_point(shape = 21, fill =NA, size = 3)+
+  geom_point(aes(fill = modality), shape = 21, size = 3)+
   geom_point(
     data  = ds_reprex %>% filter(final_session == TRUE)
-    ,size = 5, shape = 4
+    ,size = 5, shape = 13
   )+
   geom_text(aes(label = patient),
-    data = ds_reprex %>% filter(initial_session == T), nudge_x = -2
+    data = ds_reprex %>% filter(initial_session == T), nudge_x = -3
   )+
   geom_vline(xintercept = as_date("2020-03-11"), linetype = "dashed",alpha = .5)+
   geom_vline(xintercept = as_date("2020-03-23"), linetype = "dashed", alpha = .5)+
   # scale_x_continuous(breaks = seq(0,100, 50))+
+  scale_fill_viridis_d(option = "magma")+
   labs(
     title = "Fictionalized trajectories"
     # ,y = "Cumulative Cases (in thousands)"
@@ -111,12 +136,7 @@ g2 <-
   )
 g2
 # you can overwrite the mapping to plot a different measure:
-g2 +
-  aes(y = n_deaths_cum_per_1m)+
-  labs(
-    y = "Cumulative Deaths per 1 mil"
-    ,title = "Timeline of COVID-19: Cumulative Deaths per 1 million"
-  )
+
 
 # ---- publish ---------------------------------------
 path_report <- "./analysis/covid-trajectory/covid-trajectory-1.Rmd"
