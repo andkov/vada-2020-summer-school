@@ -48,7 +48,7 @@ adate %>% print_wday()
 adate %>% add_ndays(1)
 
 add_nsessions <- function(
-  x,n,patient_name,final_session=F, score_value = 20, session_modality="f2f"
+  x,n,patient_name,final_session=F, score_value = 20, session_modality="F2F"
   ){
   # x  <- "2020-01-15"
   # n  <- 4
@@ -78,13 +78,13 @@ adate %>% add_nsessions(7,"A",T)
 lss <- list()
 
 lss[[1]] <- "2020-01-02" %>% add_nsessions(
-  7,  "A", F,
-  c(20, 17, 19, 25, 21, 18, 15, 10),
-  c("f2f","f2f","f2f","f2f","f2f","f2f","f2f","f2f")
+  5,  "A", F,
+  c(32, 31, 27, 25, 21, 18),
+  c("F2F","F2F","F2F","F2F","F2F","F2F")
 )
 lss[[2]] <- "2020-01-07" %>% add_nsessions(
   8,  "B",T,
-  c(35, 38, 32, 34, 28, 25, 22, 25, 19),
+  c(38, 38, 32, 34, 28, 25, 22, 25, 19),
   c("TMH","TMH","TMH","TMH","TMH","TMH","TMH","TMH","TMH")
 )
 lss[[3]] <- "2020-01-25" %>% add_nsessions(
@@ -93,17 +93,31 @@ lss[[3]] <- "2020-01-25" %>% add_nsessions(
   c("TMH","TMH","TMH","TMH", "TMH","TMH","TMH","TMH", "TMH","TMH","TMH")
 )
 lss[[4]] <- "2020-02-23" %>% add_nsessions(
-  9,  "D",F,
+  9,  "D",T,
   c(50, 47, 42, 41,  46, 48, 48, 52,  51, 49),
-  c("f2f","f2f","f2f","f2f","TMH","TMH","TMH","TMH","TMH", "TMH")
+  c("F2F","F2F","F2F","F2F","TMH","TMH","TMH","TMH","TMH", "TMH")
   )
 lss[[5]] <- "2020-03-01" %>% add_nsessions(
-  8,  "E",F,
-  c(32, 35, 36, 37, 36, 39, 38, 42, 45),
-  c("f2f","f2f","f2f","f2f","TMH","TMH","TMH","TMH","TMH")
+  5,  "E",F,
+  c(32, 35, 36, 37, 36, 39),
+  c("F2F","F2F","TMH","TMH","TMH","TMH")
 )
-lss[[6]] <- "2020-03-27" %>% add_nsessions(7,  "F",F, 30)
-lss[[7]] <- "2020-04-04" %>% add_nsessions(9,  "G",F, 35)
+lss[[6]] <- "2020-04-17" %>% add_nsessions(
+  7,  "F",T,
+  c(32, 31, 27, 33, 35, 31, 28, 20),
+  c("TMH","TMH","TMH", "TMH","TMH", "TMH", "TMH","TMH")
+)
+lss[[7]] <- "2020-04-04" %>% add_nsessions(
+  6,  "G",F,
+  c(42, 43, 38, 40,  41, 48, 48),
+  c("TMH","TMH","TMH", "TMH","TMH","TMH", "TMH")
+)
+
+lss[[8]] <- "2020-04-07" %>% add_nsessions(
+  9,  "H",T,
+  c(33, 28, 25, 27, 35, 37, 37,35, 32, 26),
+  c("phone","phone","phone", "phone","phone", "phone", "phone","phone", "phone","phone")
+)
 
 ds_reprex <- lss %>% bind_rows()
 
@@ -126,17 +140,29 @@ g2 <-
   geom_vline(xintercept = as_date("2020-03-11"), linetype = "dashed",alpha = .5)+
   geom_vline(xintercept = as_date("2020-03-23"), linetype = "dashed", alpha = .5)+
   # scale_x_continuous(breaks = seq(0,100, 50))+
+  annotate("text",x = as_date("2020-03-12"), y = 59, label = "WH Emergency Proclamation", hjust = 0, color = "grey50")+
+  annotate("text",x = as_date("2020-03-24"), y = 12, label = "VA Response Plan issued", hjust = 0, color = "grey50")+
+  scale_y_continuous(breaks = seq(0,100, 10), limits = c(10, 60))+
   scale_fill_viridis_d(option = "magma")+
   labs(
-    title = "Fictionalized trajectories"
-    # ,y = "Cumulative Cases (in thousands)"
-    # ,x = "Days since the first confirmed case outside of China"
-    # ,caption = "(first dot) = 1st confirmed case, (second dot) = 1st confirmed death,
-    # (dotted line) = pandemic announced by WHO, (dashed lines) = 75 and 100th day since Exodus"
+    title = "Fictionalized patient trajectories"
+    ,y = "Instrument score"
+    ,x = "Date of session"
+    ,caption = "Cross in the last session indicates treatment completion"
+    ,fill = "Session \n modality"
   )
 g2
 # you can overwrite the mapping to plot a different measure:
-
+ggsave(
+  filename = "fictional-trajectories.png"
+  ,g2
+  ,path = "./analysis/study-design/"
+  , device = "png"
+  , height = 10
+  , width = 30
+  , units = "cm"
+  , dpi = 600
+)
 
 # ---- publish ---------------------------------------
 path_report <- "./analysis/covid-trajectory/covid-trajectory-1.Rmd"
